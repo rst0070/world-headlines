@@ -42,4 +42,4 @@ INSERT INTO HEADLINE (country, src_lang, url, last_update)
 INSERT INTO HEADLINE (country, src_lang, url, last_update)
     VALUES ('United Kingdom', 'en', 'https://news.google.com/rss/topics/CAAqKggKIiRDQkFTRlFvSUwyMHZNRFZxYUdjU0JXVnVMVWRDR2dKSFFpZ0FQAQ?ceid=GB:en&oc=3', 'none');
 INSERT INTO HEADLINE (country, src_lang, url, last_update)
-    VALUES ('Taiwan', 'zh-TW','https://news.google.com/topics/CAAqKggKIiRDQkFTRlFvSUwyMHZNRFZxYUdjU0JYcG9MVlJYR2dKVVZ5Z0FQAQ?ceid=TW:zh-Hant&oc=3', 'none');
+    VALUES ('Taiwan', 'zh-TW','https://news.google.com/rss/topics/CAAqKggKIiRDQkFTRlFvSUwyMHZNRFZxYUdjU0JYcG9MVlJYR2dKVVZ5Z0FQAQ?ceid=TW:zh-Hant&oc=3', 'none');
