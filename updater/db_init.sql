@@ -7,7 +7,8 @@ CREATE TABLE HEADLINE (
 );
 
 CREATE TABLE NEWS_ARTICLES (
-    url text primary key,
+    row_id integer primary key,
+    url text,
     country text,
     source text,
     title text,

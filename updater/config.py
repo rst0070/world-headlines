@@ -9,3 +9,5 @@ class Config:
     country_names: List[str] = []
     src_lang_by_counrty: Dict[str, str] = {}
     
+    crawling_timeout_per_article = 5.0
+    

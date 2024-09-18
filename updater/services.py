@@ -50,7 +50,7 @@ def update_db(country_name:str):
         if url not in new_urls:
             urls_to_delete.append(url)
     
-    DBRepository.delete_articles_by_urls(urls_to_delete)
+    DBRepository.delete_articles_by_country_n_urls(country_name, urls_to_delete)
     print(f"deleting old articles is completed: total {len(urls_to_delete)}")
     urls_to_delete.clear()
     ### ---------------------------------------------------- Select Articles to store

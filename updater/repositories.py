@@ -43,7 +43,7 @@ class DBRepository:
         return last_update
     
     @classmethod
-    def update_last_update_of_headline(cls, country_name:str, last_update:str)->str:
+    def update_last_update_of_headline(cls, country_name:str, last_update:str):
         """
         updates last update of a headline
         """
@@ -86,11 +86,13 @@ class DBRepository:
     
     
     @classmethod
-    def delete_articles_by_urls(cls, urls: List[str]):
+    def delete_articles_by_country_n_urls(cls, country_name:str, urls: List[str]):
+        
+        batch: List[Tuple[str, str]] = [(country_name, url) for url in urls]
         
         cls._cursor.executemany(
-            "DELETE FROM NEWS_ARTICLES WHERE url = ?",
-            urls
+            "DELETE FROM NEWS_ARTICLES WHERE country = ? AND url = ?",
+            batch
         )
         cls._conn.commit()
 
@@ -130,7 +132,7 @@ class GNewsRepository:
         
         def getNewsUrls(redirect_url:str) -> Tuple[str, str]:
             """
-            This is a function only used in this constructor
+            
             Args:
                 article_url (str): url of news article. it has redirection form of google news url
 
@@ -138,7 +140,7 @@ class GNewsRepository:
                 str: img url of the news article
             """
             _driver.get(url = redirect_url)
-            WebDriverWait(_driver, 5).until_not(EC.url_contains('google.com'))
+            WebDriverWait(_driver, Config.crawling_timeout_per_article).until_not(EC.url_contains('google.com'))
 
             article_url = _driver.current_url
             element = _driver.find_element(By.XPATH, "//meta[@property='og:image']")
