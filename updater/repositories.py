@@ -9,6 +9,7 @@ from selenium.webdriver.support import expected_conditions as EC
 import sqlite3
 from models import HeadLine, NewsArticle
 from config import Config
+from tqdm import tqdm
 
 
 class DBRepository:
@@ -146,7 +147,7 @@ class GNewsRepository:
         articles: List[NewsArticle] = []
         last_update: str = xml_root.find('channel').find('lastBuildDate').text
         
-        for item in xml_root.find('channel').findall('item'):
+        for item in tqdm(xml_root.find('channel').findall('item'), desc=f"crawling headline of {country_name}"):
             
             article_url     = item.find('link').text
             img_url         = Config.news_empty_img_url

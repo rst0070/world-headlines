@@ -4,7 +4,7 @@ from repositories import DBRepository, GNewsRepository
 from datetime import datetime
 from typing import List, Tuple
 from config import Config
-
+from tqdm import trange
 
 def translate_news_article(
         news_article: NewsArticle,
@@ -16,7 +16,7 @@ def translate_news_article(
             url             = news_article.url,
             country         = news_article.country,
             source          = news_article.source,
-            title           = Config.deepl_translator.translate_text(news_article.title, source_lang=source_lang, target_lang=target_lang),
+            title           = Config.deepl_translator.translate_text(news_article.title, source_lang=source_lang, target_lang=target_lang).text,
             image_url       = news_article.image_url,
             publish_date    = news_article.publish_date,
             src_lang        = news_article.src_lang,
@@ -70,10 +70,9 @@ def update_db(country_name:str):
             articles_to_save.append(article)
     
     ### ---------------------------------------------------- Translate Articles
-    print("translating articles...")
     origin_len = len(articles_to_save)
     
-    for idx in range(0, origin_len):
+    for idx in trange(0, origin_len, desc=f"translating articles"):
         
         origin:NewsArticle = articles_to_save[idx]
         
@@ -86,9 +85,8 @@ def update_db(country_name:str):
             )
             
             articles_to_save.append(translated)
-    print("OK")
     ### ---------------------------------------------------- Store Articles
     DBRepository.insert_news_articles(articles_to_save)
-    print("update complete")
+    print(f"update complete: {country_name}")
     
     
