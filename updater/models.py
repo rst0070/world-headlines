@@ -13,8 +13,7 @@ class NewsArticle:
         title:str,
         image_url:str,
         publish_date:str,
-        src_lang:str,
-        target_lang:str
+        src_lang:str
     ):
         
         self.url            = url
@@ -24,7 +23,6 @@ class NewsArticle:
         self.image_url      = image_url
         self.publish_date   = publish_date
         self.src_lang       = src_lang
-        self.target_lang    = target_lang
         
         
 
@@ -34,7 +32,6 @@ class HeadLine:
         self, 
         country_name:str, 
         src_lang:str,
-        target_lang:str,
         articles:List[NewsArticle],
         last_update:str,
         gnews_url:str            
@@ -42,7 +39,6 @@ class HeadLine:
         
         self.country_name: str           = country_name
         self.src_lang: str               = src_lang
-        self.target_lang: str            = target_lang
         self.articles: List[NewsArticle] = articles
         self.last_update: str            = last_update
         self.gnews_url: str              = gnews_url

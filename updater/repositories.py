@@ -41,15 +41,26 @@ class DBRepository:
         last_update = res.fetchone()[0]
         
         return last_update
+    
+    @classmethod
+    def update_last_update_of_headline(cls, country_name:str, last_update:str)->str:
+        """
+        updates last update of a headline
+        """
+        cls._cursor.execute(
+            f"UPDATE HEADLINE SET last_update = '{last_update}' WHERE country = '{country_name}'"
+        )
+        cls._conn.commit()
 
     @classmethod
     def get_urls_of_articles(cls, country_name:str) -> List[str]:
        
-       res = cls._cursor.execute(
+       res: List[Tuple[str]] = cls._cursor.execute(
            f"SELECT DISTINCT url FROM NEWS_ARTICLES WHERE country = '{country_name}'"
-       )
+       ).fetchall()
        
-       urls = res.fetchall()
+       urls = [tup[0] for tup in res]
+       
        return urls
 
 
@@ -60,13 +71,13 @@ class DBRepository:
         
         for i in news_articles:
             batch.append(
-                (i.url, i.country, i.source, i.title, i.image_url, i.publish_date, i.src_lang, i.target_lang)
+                (i.url, i.country, i.source, i.title, i.image_url, i.publish_date, i.src_lang)
             )
         
         cls._cursor.executemany(
             """
-            INSERT INTO NEWS_ARTICLES(url, country, source, title, image_url, publish_date, src_lang, target_lang) 
-                VALUES(?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO NEWS_ARTICLES(url, country, source, title, image_url, publish_date, src_lang) 
+                VALUES(?, ?, ?, ?, ?, ?, ?)
             """,
             batch
         )
@@ -75,7 +86,7 @@ class DBRepository:
     
     
     @classmethod
-    def delete_articles_by_urls(cls, urls: List[Tuple[str]]):
+    def delete_articles_by_urls(cls, urls: List[str]):
         
         cls._cursor.executemany(
             "DELETE FROM NEWS_ARTICLES WHERE url = ?",
@@ -110,7 +121,6 @@ class GNewsRepository:
         
         
         src_lang = Config.src_lang_by_counrty[country_name]
-        target_lang = Config.target_lang_by_country[country_name]
         
         gnews_url = DBRepository.get_headline_url(country_name)
         
@@ -164,8 +174,7 @@ class GNewsRepository:
                     title           = item.find('title').text,
                     image_url       = img_url,
                     publish_date    = item.find('pubDate').text,
-                    src_lang        = src_lang,
-                    target_lang     = target_lang
+                    src_lang        = src_lang
                 )
             )
             
@@ -174,7 +183,6 @@ class GNewsRepository:
         return HeadLine(
             country_name=country_name,
             src_lang = src_lang,
-            target_lang = target_lang,
             articles=articles,
             last_update=last_update,
             gnews_url=gnews_url    

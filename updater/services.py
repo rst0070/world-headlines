@@ -1,35 +1,23 @@
-import deepl
 from models import HeadLine, NewsArticle
 from repositories import DBRepository, GNewsRepository
 from datetime import datetime
-from typing import List, Tuple
+from typing import List
 from config import Config
-from tqdm import trange
+from tqdm import trange, tqdm
 
-def translate_news_article(
-        news_article: NewsArticle,
-        target_lang: str,
-        source_lang: str
-    ):
+def is_gnews_updated(country_name:str) -> bool:
+    """
+    Check whether gnews last build date is newer than recorded in DB.
     
-        return NewsArticle(
-            url             = news_article.url,
-            country         = news_article.country,
-            source          = news_article.source,
-            title           = Config.deepl_translator.translate_text(news_article.title, source_lang=source_lang, target_lang=target_lang).text,
-            image_url       = news_article.image_url,
-            publish_date    = news_article.publish_date,
-            src_lang        = news_article.src_lang,
-            target_lang     = target_lang
-        )   
+    Args:
+        country_name (str): Should be in Config.country_names
 
-
-def is_gnews_updated(country_name:str):
-    assert country_name in Config.country_names, f"{country_name} is not config.Config.country_names"
+    Returns:
+        bool: boolean data
+    """
+    db_last_update: str = DBRepository.get_last_update_of_headline(country_name)
     
-    db_last_update = DBRepository.get_last_update_of_headline(country_name)
-    
-    gnews_last_update = GNewsRepository.get_last_update_of_headline(country_name)
+    gnews_last_update: str = GNewsRepository.get_last_update_of_headline(country_name)
     
     return db_last_update != gnews_last_update
     
@@ -42,51 +30,37 @@ def update_db(country_name:str):
     1. Get headline from GNews
     2. Delete articles from new headline, which is already exist 
     3. Delete articles from DB, which is no longer on headline
-    4. Translate articles
     4. insert new articles
+    5. update last_update of the headline
     """
     
     print(f"updating db for {country_name} ----------------------------------------------------")
     headline: HeadLine = GNewsRepository.get_headline(country_name)
 
-    old_urls = DBRepository.get_urls_of_articles(country_name)
-    new_urls = [article.url for article in headline.articles]
+    old_urls: List[str] = DBRepository.get_urls_of_articles(country_name)
+    new_urls: List[str] = [article.url for article in headline.articles]
     
-    articles_to_save = []
-    urls_to_delete: List[Tuple[str]] = []
-    
+    articles_to_save: List[NewsArticle] = []
+    urls_to_delete: List[str] = []
     
     ### ---------------------------------------------------- Delete old Articles
     for url in old_urls:
+        assert type(url) is str
+        
         if url not in new_urls:
-            urls_to_delete.append((url,))
+            urls_to_delete.append(url)
     
     DBRepository.delete_articles_by_urls(urls_to_delete)
-    
-    
+    print(f"deleting old articles is completed: total {len(urls_to_delete)}")
+    urls_to_delete.clear()
     ### ---------------------------------------------------- Select Articles to store
     for article in headline.articles:
         if article.url not in old_urls:
             articles_to_save.append(article)
     
-    ### ---------------------------------------------------- Translate Articles
-    origin_len = len(articles_to_save)
-    
-    for idx in trange(0, origin_len, desc=f"translating articles"):
-        
-        origin:NewsArticle = articles_to_save[idx]
-        
-        for target_lang in Config.target_langs:
-            if origin.target_lang == target_lang:
-                continue
-            
-            translated = translate_news_article(
-                origin, target_lang, origin.src_lang
-            )
-            
-            articles_to_save.append(translated)
     ### ---------------------------------------------------- Store Articles
     DBRepository.insert_news_articles(articles_to_save)
-    print(f"update complete: {country_name}")
-    
+    ### ---------------------------------------------------- Update last update of the headline
+    DBRepository.update_last_update_of_headline(country_name, headline.last_update)
+    print(f"update last_update of headline complete: {headline.last_update}")
     
