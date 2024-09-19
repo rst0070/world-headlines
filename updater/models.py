@@ -11,6 +11,7 @@ class NewsArticle:
         country,
         source:str,
         title:str,
+        description:str,
         image_url:str,
         publish_date:str,
         src_lang:str
@@ -20,6 +21,7 @@ class NewsArticle:
         self.country        = country
         self.source         = source
         self.title          = title
+        self.description    = description
         self.image_url      = image_url
         self.publish_date   = publish_date
         self.src_lang       = src_lang

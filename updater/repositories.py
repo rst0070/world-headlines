@@ -71,13 +71,13 @@ class DBRepository:
         
         for i in news_articles:
             batch.append(
-                (i.url, i.country, i.source, i.title, i.image_url, i.publish_date, i.src_lang)
+                (i.url, i.country, i.source, i.title, i.description, i.image_url, i.publish_date, i.src_lang)
             )
         
         cls._cursor.executemany(
             """
-            INSERT INTO NEWS_ARTICLES(url, country, source, title, image_url, publish_date, src_lang) 
-                VALUES(?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO NEWS_ARTICLES(url, country, source, title, description, image_url, publish_date, src_lang) 
+                VALUES(?, ?, ?, ?, ?, ?, ?, ?)
             """,
             batch
         )
@@ -130,22 +130,40 @@ class GNewsRepository:
         _options.add_argument('--headless')
         _driver = webdriver.Firefox(options=_options)
         
-        def getNewsUrls(redirect_url:str) -> Tuple[str, str]:
+        def getDeepInfo(redirect_url:str) -> Tuple[str, str, str]:
             """
-            
+            Using redirect_url google providing, redirect it to get to original article.
+            In there, get detailed information: article original url, image url, description
+
             Args:
-                article_url (str): url of news article. it has redirection form of google news url
+                redirect_url (str): url for making web browser redirect to google.
 
             Returns:
-                str: img url of the news article
+                Tuple[str, str, str]: article original url, image url, description
             """
             _driver.get(url = redirect_url)
             WebDriverWait(_driver, Config.crawling_timeout_per_article).until_not(EC.url_contains('google.com'))
 
-            article_url = _driver.current_url
-            element = _driver.find_element(By.XPATH, "//meta[@property='og:image']")
+            # --------------- get original article url
+            article_url: str = _driver.current_url
+            # --------------- get image url
+            image_url: str = Config.news_empty_img_url
+            try:
+                image_url = _driver.find_element(By.XPATH, "//meta[@property='og:image']").get_attribute('content')
+                if image_url is None:
+                    image_url = Config.news_empty_img_url
+            except:
+                pass
+            # --------------- get description
+            description: str = ''
+            try:
+                description = _driver.find_element(By.XPATH, "//meta[@property='og:description']").get_attribute('content')
+                if description is None:
+                    description = ''
+            except:
+                pass
             
-            return article_url, element.get_attribute('content')
+            return article_url, image_url, description
         
         
         ####################################################################
@@ -163,8 +181,10 @@ class GNewsRepository:
             
             article_url     = item.find('link').text
             img_url         = Config.news_empty_img_url
+            description     = ''
+            
             try:
-                article_url, img_url = getNewsUrls(article_url)
+                article_url, img_url, description = getDeepInfo(article_url)
             except:
                 pass
             
@@ -174,6 +194,7 @@ class GNewsRepository:
                     country         = country_name,
                     source          = item.find('source').text,
                     title           = item.find('title').text,
+                    description     = description,
                     image_url       = img_url,
                     publish_date    = item.find('pubDate').text,
                     src_lang        = src_lang
