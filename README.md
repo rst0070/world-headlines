@@ -43,3 +43,76 @@ __Globally Accessible Variables__
 __Image src__  
 with src attribute in a `<Image>` tag, you need to the src information on the `next.config.mjs`.  
 [Document](https://nextjs.org/docs/messages/next-image-unconfigured-host)
+
+## Python unit testing with `pytest`
+I felt that not using test could faster the coding process, but if the needs and some data structure is changed, using automated testing could faster the coding process.  
+  
+__Categories of Testing__  
+- UI test/ End-To-End test
+- Integration Test
+- unit test
+  
+unit test just needs part of code. so that, it tests segment of code. and it looks like `pytest` library is popular one rather than official `unittest` library. 
+
+### Get Started
+
+__Run test__  
+In a directory, if you run `pytest`, then it automatically detects python file starting with `test_`, and run that python script regarding its a test code.   
+- pytest regards 
+    - python file starting with `test_` as test code
+    - function starting with `test_` as unit test
+    - class starting with `Test` as a group of unit tests
+- other methods are [here](https://docs.pytest.org/en/stable/how-to/usage.html#usage)
+
+
+__Group of Unit test__  
+Every unit test (function) has unique instance of the class so functions inside test class are isolated.  
+for example, `test_two` of the code below will fail.  
+```python
+class TestClassDemoInstance:
+    value = 0
+
+    def test_one(self):
+        self.value = 1
+        assert self.value == 1
+
+    def test_two(self):
+        assert self.value == 1
+```
+  
+### Fixtures
+In testing, a fixture provides a defined, reliable and consistent context for the tests. This could include environment (for example a database configured with known parameters) or content (such as a dataset).  
+Example below.
+```python
+from __future__ import annotations
+
+import pytest
+
+
+@pytest.fixture
+def order():
+    return []
+
+
+@pytest.fixture
+def outer(order, inner):
+    order.append("outer")
+
+
+class TestOne:
+    @pytest.fixture
+    def inner(self, order):
+        order.append("one")
+
+    def test_order(self, order, outer):
+        assert order == ["one", "outer"]
+
+
+class TestTwo:
+    @pytest.fixture
+    def inner(self, order):
+        order.append("two")
+
+    def test_order(self, order, outer):
+        assert order == ["two", "outer"]
+```

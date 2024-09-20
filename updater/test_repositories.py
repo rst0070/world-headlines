@@ -1,31 +1,17 @@
-import unittest
-from repositories import DBRepository, GNewsRepository
+import pytest
+from config import Config
+from repositories import DBRepository
+import sqlite3
 
-class DBRepositoryTestCase(unittest.TestCase):
-    
-    def get_headline_url():
-        pass
-    
-    def get_last_update_of_headline():
-        pass
-    
-    def get_urls_of_articles():
-        pass
-   
-    def insert_news_articles():
-        pass
-    
-    def delete_articles_by_urls():
-        pass
+# @pytest.fixture
+# def db_setting():
+#     conn
 
-class GNewsRepositoryTestCase(unittest.TestCase):
+# class TestDBRepository:
     
-    def get_last_update_of_headline():
-        pass
-    
-    def get_headline():
-        pass
-    
-
-if __name__ == "__main__":
-    unittest.main()
+#     @pytest.fixture
+#     def db_rep():
+#         DBRepository._conn = 
+        
+#     def test_one(self):
+#         assert 1 == 1
