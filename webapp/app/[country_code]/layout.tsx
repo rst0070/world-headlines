@@ -22,6 +22,5 @@ export default async function NewsLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-
   return children;
 }

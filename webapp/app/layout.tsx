@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-import GlobalData from "./app.data";
+import getGlobalData from "./app.data";
 import { ReactNode } from "react";
 import Script from "next/script";
+import { GlobalData } from "./models";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -18,7 +19,7 @@ const geistMono = localFont({
 
 export const metadata: Metadata = {
   title: "World Headlines - Global News in Your Language",
-  description: "Get the latest world headlines translated into your language. Stay updated with global news from the US, China, Europe, and more.",
+  description: "Check out headlines from around the world. Stay updated with global news from the US, China, Europe, and more.",
 };
 
 async function getCountryList(): Promise<ReactNode[]> {
@@ -26,10 +27,13 @@ async function getCountryList(): Promise<ReactNode[]> {
   let countryList = []
 
   return new Promise(
-    (resolve, reject) => {
-      GlobalData.country_codes.forEach(
+    async (resolve, reject) => {
+
+      let data = await getGlobalData()
+
+      data.countryCodes.forEach(
         (value, index, array) => {
-          let name:string = GlobalData.headline_map.get(value)?.country
+          let name = data.headlineMap.get(value)?.country
           countryList.push(
             <li key={value}><a href={'/'+value}>{name}</a></li>
           )
@@ -48,18 +52,17 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html>
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <header>
-            <h1>World Headlines</h1>
+            <h1><a href="/">World Headlines</a></h1>
             <nav>
                 <ul>
                   {await getCountryList()}
                 </ul>
             </nav>
         </header>
-        
-        <div id="google_translate_element" style={{display:'none'}}></div>
+        <section className="translator-section" id="google_translate_element"></section>
         {children}
         <Script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"/>
         <Script src="/js/google_translate.js"/>

@@ -55,4 +55,23 @@ class Headline{
     }
 }
 
-export {Headline, NewsArticle}
+class GlobalData {
+
+    countryNames: string[];
+    countryCodes: string[];
+    headlineMap: Map<string, Headline>;
+    noImageUrl: string;
+
+    constructor(
+        countryNames: string[],
+        countryCodes: string[],
+        headlineMap: Map<string, Headline>,
+        noImageUrl: string
+    ){
+        this.countryNames = countryNames;
+        this.countryCodes = countryCodes;
+        this.headlineMap = headlineMap;
+        this.noImageUrl = noImageUrl;
+    }
+}
+export {Headline, NewsArticle, GlobalData}

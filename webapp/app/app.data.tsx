@@ -1,5 +1,6 @@
 import sqlite3 from "sqlite3";
-import {Headline, NewsArticle} from './models';
+import {Headline, NewsArticle, GlobalData} from './models';
+import { resolve } from "path";
 
 const db = new sqlite3.Database("world_headline.db")
 
@@ -11,7 +12,7 @@ async function getCountryNames(): Promise<string[]> {
             if(err){
                 reject(err)
             }else{
-                rows.forEach((v, i, a)=>{
+                rows.forEach((v:any, i, a)=>{
                     data.push(v.country)
                     if(i == a.length - 1){
                         resolve(data)
@@ -30,7 +31,7 @@ async function getCountryCodes(): Promise<string[]> {
                 reject(err)
             }else{
                 let v_list: string[] = []
-                rows.forEach((v, i, a)=>{
+                rows.forEach((v:any, i, a)=>{
                     v_list.push(v.country_code)
                     if(i == a.length - 1){
                         resolve(v_list)
@@ -52,7 +53,7 @@ async function getNewsArticles(country_name: string): Promise<NewsArticle[]> {
                 if(err){
                     rej(err)
                 }else{
-                    rows.forEach((v, i, a)=>{
+                    rows.forEach((v:any, i, a)=>{
                         article_list.push(
                             new NewsArticle(
                                 v.url,v.country,v.source,
@@ -72,19 +73,19 @@ async function getNewsArticles(country_name: string): Promise<NewsArticle[]> {
 async function getHeadline(country_code:string): Promise<Headline> {
     return new Promise((res, rej) => {
         db.get(`
-            SELECT country,src_lang,url,last_update
+            SELECT country, country_code, src_lang,url,last_update
             FROM HEADLINE
             WHERE country_code = '${country_code}'
-            `,async (err, row)=>{
+            `,async (err, row:any)=>{
                 if(err){
                     rej(err)
                 }else{
                     let articles: NewsArticle[] = await getNewsArticles(row.country)
                     let headline: Headline = new Headline(
-                        row.country, country_code, row.src_lang,
+                        row.country, row.country_code, row.src_lang,
                         row.url, row.last_update, articles
                     )
-
+                    
                     res(headline)
                 }
             })
@@ -92,34 +93,32 @@ async function getHeadline(country_code:string): Promise<Headline> {
 }
 
 async function getDataMap(): Promise<Map<string, Headline>>{
-    return new Promise(async (resolve, reject) =>{
-        let codes: string[] = await getCountryCodes()
-        let map: Map<string, Headline> = new Map<string, Headline>()
+    
+    let codes: string[] = await getCountryCodes()
+    let map: Map<string, Headline> = new Map<string, Headline>()
 
+    await Promise.all(codes.map(async (key) => {
+        let headline: Headline = await getHeadline(key);
+        map.set(key, headline);
+    }));
 
-        codes.forEach(async (v, i, a)=>{
-            let headline: Headline = await getHeadline(v)
-            map.set(v, headline)
-            
-            if(i == a.length - 1){
-                resolve(map)
-            }
-        })
+    return map
+}
 
-    })
+let globalData: GlobalData;
+
+export default async function getGlobalData(): Promise<GlobalData>{
+
     
 
+    return new Promise(async (resolve, reject) => {
+        if(globalData == undefined)
+            globalData = new GlobalData(
+                await getCountryNames(),
+                await getCountryCodes(),
+                await getDataMap(),
+                "https://via.placeholder.com/150"
+            )
+        resolve(globalData)
+    })
 }
-
-let countryNames: string[] = await getCountryNames()
-let countryCodes: string[] = await getCountryCodes()
-let headlineMap: Map<string, Headline> = await getDataMap()
-
-
-const GlobalData = {
-    country_names : countryNames,
-    country_codes : countryCodes,
-    headline_map : headlineMap
-}
-
-export default GlobalData
