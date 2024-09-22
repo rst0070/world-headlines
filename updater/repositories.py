@@ -6,7 +6,6 @@ from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
-import sqlite3
 from models import HeadLine, NewsArticle
 from config import Config
 from tqdm import tqdm
@@ -14,13 +13,10 @@ from tqdm import tqdm
 
 class DBRepository:
     
-    _conn: sqlite3.Connection = Config.db_connection
-    _cursor = _conn.cursor()
-    
     @classmethod
     def get_headline_url(cls, country_name: str) -> str:
         
-        res = cls._cursor.execute(
+        res = Config.db_cursor.execute(
             f"SELECT url FROM HEADLINE WHERE country = '{country_name}'"
         )
         
@@ -34,7 +30,7 @@ class DBRepository:
         returns last update of headline which is on DB
         """
         
-        res = cls._cursor.execute(
+        res = Config.db_cursor.execute(
             f"SELECT last_update FROM HEADLINE WHERE country = '{country_name}'"
         )
         
@@ -47,15 +43,16 @@ class DBRepository:
         """
         updates last update of a headline
         """
-        cls._cursor.execute(
+        Config.db_cursor.execute(
             f"UPDATE HEADLINE SET last_update = '{last_update}' WHERE country = '{country_name}'"
         )
-        cls._conn.commit()
+        
+        Config.db_connection.commit()
 
     @classmethod
     def get_urls_of_articles(cls, country_name:str) -> List[str]:
        
-       res: List[Tuple[str]] = cls._cursor.execute(
+       res: List[Tuple[str]] = Config.db_cursor.execute(
            f"SELECT DISTINCT url FROM NEWS_ARTICLES WHERE country = '{country_name}'"
        ).fetchall()
        
@@ -74,14 +71,14 @@ class DBRepository:
                 (i.url, i.country, i.source, i.title, i.description, i.image_url, i.publish_date, i.src_lang)
             )
         
-        cls._cursor.executemany(
+        Config.db_cursor.executemany(
             """
             INSERT INTO NEWS_ARTICLES(url, country, source, title, description, image_url, publish_date, src_lang) 
                 VALUES(?, ?, ?, ?, ?, ?, ?, ?)
             """,
             batch
         )
-        cls._conn.commit()
+        Config.db_connection.commit()
         batch.clear()
     
     
@@ -90,11 +87,11 @@ class DBRepository:
         
         batch: List[Tuple[str, str]] = [(country_name, url) for url in urls]
         
-        cls._cursor.executemany(
+        Config.db_cursor.executemany(
             "DELETE FROM NEWS_ARTICLES WHERE country = ? AND url = ?",
             batch
         )
-        cls._conn.commit()
+        Config.db_connection.commit()
 
 
 

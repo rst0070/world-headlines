@@ -7,3 +7,7 @@ node_modules
 tmp/**
 
 note.ipynb
+
+world-headlines.github.io
+
+.pytest_cache

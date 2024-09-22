@@ -1,47 +1,62 @@
 import time
+import os
+import pygit2
+import sqlite3
+from updater import load_configs, check_n_update
 from config import Config
-from services import is_gnews_updated, update_db
-from typing import List, Tuple
 
-def load_configs():
-    """
-    Updates basic headline information to the Config obj
-    The information will be used for inserting news articles
-    """
-    
-    cur = Config.db_connection.cursor()
-    
-    ### 
-    res: List[Tuple[str, str]] = cur.execute("SELECT country, src_lang FROM HEADLINE").fetchall()
-    
-    for country, src_lang in res:
-        assert type(country) is str
-        assert type(src_lang) is str
-        
-        Config.country_names.append(country)
-        Config.src_lang_by_counrty[country] = src_lang
+PATH_PRODUCT_REPO = os.path.join(os.getcwd(), "world-headlines.github.io")
+STR_CLONE_PRODUCT_REPO = "https://world-headlines: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@github.com/world-headlines/world-headlines.github.io.git"
 
-def check_n_update():
-    """
-    1. Check "is updating headline in DB needed?"
-    2. If it is needed, updated db
+def fetch_product_repo():
     """
     
-    for country in Config.country_names:
-        print(f"Check n Update: {country}")
-        
-        if is_gnews_updated(country):
-            update_db(country)
-       
+    """
+    print("fetch_product_repo() is started ----------------------------------------------------")
+    
+    repo: pygit2.Repository = None
+    if not os.path.isdir(PATH_PRODUCT_REPO):
+        os.system(
+        f"""mkdir {PATH_PRODUCT_REPO} && \
+            git clone {STR_CLONE_PRODUCT_REPO} {PATH_PRODUCT_REPO}
+        """)
+    
+    os.system(f"""cd {PATH_PRODUCT_REPO} && \
+              git fetch              
+              """)
 
+    print("fetch_product_repo() is completed ----------------------------------------------------")
+    
+def set_db_conn():
+    db_path = os.path.join(PATH_PRODUCT_REPO, 'world_headline.db')
+    Config.db_connection = sqlite3.connect(db_path)
+    
+def update_product_repo():
+    print("update_product_repo() is started ----------------------------------------------------")
+    
+    os.system(
+        f"""cd {PATH_PRODUCT_REPO} && \
+            git add . && \
+            git commit -m "db updated" && \
+            git push origin main
+        """)
+    
+    print("update_product_repo() is completed ----------------------------------------------------")
+    
 def main():
     
-    load_configs()
-    
     while True:
+        fetch_product_repo()
+        set_db_conn()
         
-        check_n_update()
-        time.sleep(60 * 60 * 1.0)        
+        load_configs()
+        check_n_update() 
+        
+        update_product_repo()
+        
+        print(f"sleep for...")
+        time.sleep(60 * 60 * 1.0) 
+    
     
 if __name__ == "__main__":
     main()
