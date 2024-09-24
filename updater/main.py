@@ -8,11 +8,11 @@ from config import Config
 PATH_PRODUCT_REPO = os.path.join(os.getcwd(), "world-headlines.github.io")
 STR_CLONE_PRODUCT_REPO = "https://world-headlines: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@github.com/world-headlines/world-headlines.github.io.git"
 
-def fetch_product_repo():
+def pull_product_repo():
     """
     
     """
-    print("fetch_product_repo() is started ----------------------------------------------------")
+    print("pull_product_repo() is started ----------------------------------------------------")
     
     repo: pygit2.Repository = None
     if not os.path.isdir(PATH_PRODUCT_REPO):
@@ -22,7 +22,7 @@ def fetch_product_repo():
         """)
     
     os.system(f"""cd {PATH_PRODUCT_REPO} && \
-              git fetch              
+              git pull origin main              
               """)
 
     print("fetch_product_repo() is completed ----------------------------------------------------")
@@ -46,7 +46,7 @@ def update_product_repo():
 def main():
     
     while True:
-        fetch_product_repo()
+        pull_product_repo()
         set_db_conn()
         
         load_configs()
