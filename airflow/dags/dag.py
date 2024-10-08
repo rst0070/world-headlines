@@ -7,7 +7,7 @@ import os
 import logging
 from typing import List, Tuple
 
-from custom.hooks import MetadataHook
+from custom.hooks import DBHook
 from custom import operators
 from custom import sensors
 
@@ -83,7 +83,7 @@ def update_headline_by_country(
 )
 def workflow():
     
-    crawl_max_num = 2
+    crawl_max_num = 50
     
     conn_str = "mssql+pyodbc://wh_updater:WorldHeadlinesUpdater99!@1.240.103.57:3021/world_headlines?driver=ODBC+Driver+17+for+SQL+Server"
     temps_path = os.path.join(os.path.dirname(__file__), '..', 'temps')
@@ -94,8 +94,8 @@ def workflow():
     db_export_path = os.path.join(github_repo_local_path, 'data')
     
     # --------------------- Get metadata
-    metadata_hook = MetadataHook(conn_str)
-    metadata_list: List[dict] = metadata_hook.get_metadata()
+    _dbhook = DBHook(conn_str)
+    metadata_list: List[dict] = _dbhook.get_metadata()
     
     # --------------------- Run task group
     task_groups = []

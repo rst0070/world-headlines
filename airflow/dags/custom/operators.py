@@ -8,12 +8,10 @@
     - delete crawled articles
     
 """
-
 from airflow.models import BaseOperator
 from airflow.utils.log.logging_mixin import LoggingMixin
 
-from custom.hooks import MetadataHook
-from custom.hooks import DBHook
+from custom.hooks import DBHook, CrawlHeadlineHook
 from sqlalchemy import text
 from sqlalchemy.engine import Engine
 
@@ -65,19 +63,46 @@ class CrawlHeadline(BaseOperator, LoggingMixin):
         
     def execute(self, context):
         
-        hook = DBHook(self.db_conn_str)
+        crawl_hook = CrawlHeadlineHook(
+                        self.gnews_url,
+                        self.country_code,
+                        self.crawl_max_num,
+                        self.crawl_timeout_sec
+                    )
         
-        articles, last_update = self._get_articles(self.gnews_url)
-        
-        engine = hook.get_engine()
+        articles, last_update = crawl_hook.crawl()
+        articles = [
+            {
+                'country_code' : article.country_code,
+                'url' : article.url,
+                'title' : article.title,
+                'description' : article.description,
+                'image_url' : article.image_url,
+                'publish_date' : str(article.publish_date),
+                'source' : article.source
+                
+            } for article in articles
+        ]
+    
+        db_hook = DBHook(self.db_conn_str)
+        engine = db_hook.get_engine()
         
         with engine.begin() as conn:
             
             conn.execute(
                 text(
                 """
-                INSERT INTO CRAWLED_ARTICLES(country_code,url,title,description,image_url,publish_date,source)
-                VALUES(:country_code,:url,:title,:description,:image_url,:publish_date,:source)
+                IF NOT EXISTS (
+                    SELECT 1
+                    FROM CRAWLED_ARTICLES
+                    WHERE
+                        country_code = :country_code
+                        and url = :url
+                )
+                BEGIN
+                    INSERT INTO CRAWLED_ARTICLES(country_code,url,title,description,image_url,publish_date,source)
+                    VALUES(:country_code,:url,:title,:description,:image_url,:publish_date,:source)
+                END
                 """),
                 articles
             )
@@ -88,95 +113,6 @@ class CrawlHeadline(BaseOperator, LoggingMixin):
             )
             self.log.info("last_update of DB is updated!!")
             
-            
-        
-    # def _get_headline_url(self, hook) -> str:
-        
-    #     engine = hook.get_engine()
-    #     with engine.begin() as conn:
-            
-    #         url = conn.execute(text(f"SELECT url FROM HEADLINE WHERE country_code = '{self.country_code}'")).all()[0][0]
-    #         assert type(url) is str
-            
-    #         return url
-        
-    def _get_articles(self, gnews_url) -> Tuple[List[dict], datetime.datetime]:
-        
-        ####################################################################
-        ### Using RSS request(XML parsing), save articles information
-        ####################################################################
-        
-        
-        rss_req = requests.get(gnews_url)
-        xml_root = ET.fromstring(rss_req.text)
-        
-        article_info_list: List[dict] = []
-        last_update = scripts.gnews_gmt_str_to_datetime(xml_root.find('channel').find('lastBuildDate').text)
-        
-        driver = self._get_webdriver()
-        #tqdm(xml_root.find('channel').findall('item'), desc=f"crawling headline of {country_name}"):
-        # need to find a way to use tqdm for log            
-        for idx, item in enumerate(xml_root.find('channel').findall('item')):
-            
-            if idx >= self.crawl_max_num:
-                break
-            
-            article = {
-                    "country_code"  :self.country_code,
-                    "url"           : item.find('link').text, 
-                    "title"         : item.find('title').text,
-                    "description"   : None,
-                    "image_url"     : None,
-                    "publish_date"  : scripts.gnews_gmt_str_to_datetime(item.find('pubDate').text),
-                    "source"        : item.find('source').text
-                }
-            
-            try:
-                article["url"], \
-                article["image_url"], \
-                article["description"] \
-                    = self._get_article_info(driver, article["url"])
-            except:
-                self.log.warning("error occurred in _get_articles")
-            
-            
-            article_info_list.append(article)
-            
-        driver.quit()
-        
-        return article_info_list, last_update
-        
-    def _get_webdriver(self) -> webdriver.Firefox:
-        
-        options = webdriver.FirefoxOptions()  
-        options.add_argument('--headless')
-        driver = webdriver.Firefox(options=options)
-        
-        return driver
-    
-    def _get_article_info(
-        self, 
-        driver:webdriver.Firefox, 
-        gnews_article_url:str,
-        
-        ) -> Tuple[str, str|None, str|None]:
-
-        # --------------- wait until get into original article url
-        driver.get(url = gnews_article_url)
-        WebDriverWait(driver, self.crawl_timeout_sec).until_not(EC.url_contains('google.com'))
-        
-        article_url: str = driver.current_url
-        image_url: str|None = None
-        description: str|None = None
-        
-        try:
-            image_url = driver.find_element(By.XPATH, "//meta[@property='og:image']").get_attribute('content')
-            description = driver.find_element(By.XPATH, "//meta[@property='og:description']").get_attribute('content')
-        except:
-            self.log.warning("exception occurred in _get_artice_info")
-            
-        return article_url, image_url, description 
-    
 
 class DeleteOldArticles(BaseOperator, LoggingMixin):
     
@@ -261,6 +197,8 @@ class InsertNewArticles(BaseOperator, LoggingMixin):
                 FROM 
                     CRAWLED_ARTICLES ca 
                 WHERE
+                    ca.country_code = N'{self.country_code}' 
+                    AND
                     ca.url 
                         NOT IN (
                                 SELECT url
@@ -454,7 +392,7 @@ class ExportMetadata(BaseOperator, LoggingMixin):
     
     def execute(self, context):
         
-        hook = MetadataHook(self.db_conn_str)
+        hook = DBHook(self.db_conn_str)
         metadata_list = hook.get_metadata()
         
         country_codes = []
