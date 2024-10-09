@@ -11,6 +11,8 @@ from custom.hooks import DBHook
 from custom import operators
 from custom import sensors
 
+import credentials
+
 logger = logging.getLogger(__name__)
 
 default_args = {
@@ -85,11 +87,11 @@ def workflow():
     
     crawl_max_num = 50
     
-    conn_str = "mssql+pyodbc://wh_updater:WorldHeadlinesUpdater99!@1.240.103.57:3000/world_headlines?driver=ODBC+Driver+17+for+SQL+Server"
+    conn_str = credentials.MSSQL_CONN_STR
     temps_path = os.path.join(os.path.dirname(__file__), '..', 'temps')
     
     
-    github_repo_conn_str = "https://world-headlines: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@github.com/world-headlines/world-headlines.github.io.git"
+    github_repo_conn_str = credentials.GITHUB_REPO_CONN_STR
     github_repo_local_path = os.path.join(temps_path, 'repo')
     db_export_path = os.path.join(github_repo_local_path, 'data')
     

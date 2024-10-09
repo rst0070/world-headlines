@@ -145,12 +145,21 @@ class DeleteOldArticles(BaseOperator, LoggingMixin):
             conn.execute(
                 text(
                 f"""
-                DELETE FROM HEADLINE_ARTICLES
-                WHERE url NOT IN (
-                        SELECT url 
-                        FROM CRAWLED_ARTICLES 
-                        WHERE country_code = '{self.country_code}'
-                    )
+                IF EXISTS (
+                    SELECT url 
+                    FROM CRAWLED_ARTICLES 
+                    WHERE country_code = '{self.country_code}'
+                )
+                BEGIN
+                    DELETE FROM HEADLINE_ARTICLES
+                    WHERE 
+                        country_code = '{self.country_code}' AND
+                        url NOT IN (
+                            SELECT url 
+                            FROM CRAWLED_ARTICLES 
+                            WHERE country_code = '{self.country_code}'
+                        )
+                END
                 """
                 )
             )
@@ -326,6 +335,7 @@ class ExportDB(BaseOperator, LoggingMixin):
         hook = DBHook(self.db_conn_str)
         engine = hook.get_engine()
         
+        result = None
         with engine.begin() as conn:
             
             result = conn.execute(
@@ -347,29 +357,28 @@ class ExportDB(BaseOperator, LoggingMixin):
                 )
             ).all()
             
-            assert type(result) is list, f"{type(result)} is not list!"
-            
-            with open(self.export_path, "w") as file:
+        assert type(result) is list, f"{type(result)} is not list!"    
+        with open(self.export_path, "w") as file:
                 
-                file.write("country_code\turl\ttitle\tdescription\timage_url\tpublish_date\tsource")
-                len_cols = 7
+            file.write("country_code\turl\ttitle\tdescription\timage_url\tpublish_date\tsource")
+            len_cols = 7
                 
-                for row in result:
-                    assert len(row) == len_cols
-                    formatted_row:str = '\n'
+            for row in result:
+                assert len(row) == len_cols
+                formatted_row:str = '\n'
                     
-                    for idx, val in enumerate(row):
+                for idx, val in enumerate(row):
                         
-                        val = str(val)
+                    val = str(val)
                         
-                        val = val.replace('\t', ' ')
-                        formatted_row += val
+                    val = val.replace('\t', ' ')
+                    formatted_row += val
                         
-                        if idx != len_cols - 1:
-                            formatted_row += '\t'
+                    if idx != len_cols - 1:
+                        formatted_row += '\t'
                             
-                    assert formatted_row.count('\t', 0, len(formatted_row))
-                    file.write(formatted_row)
+                assert formatted_row.count('\t', 0, len(formatted_row))
+                file.write(formatted_row)
             
 class ExportMetadata(BaseOperator, LoggingMixin):
     
