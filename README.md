@@ -1,7 +1,8 @@
 # world-headlines-airflow
-This is for automating update process of [world-headlines](https://world-headlines.github.io).  
-First version of updater was vanila python code, but because of that the process gets more need for monitoring, 
-I decided to migrate the process to apache airflow. 
+This is automated updating process for [world-headlines](https://world-headlines.github.io).  
+
+## Process
+
 
   
 ## DB design
@@ -45,3 +46,13 @@ We will use this, but small letters.
     - delete crawled articles
 - copy DB data to local storage (e.g. sqlite)
 - pull & update production repo of static webpage
+
+## TO DO
+- set auto commit with sqlalchemy
+    - with `autocommit=False`, deadlock happens.
+    - I thought it is not needed because the SQL Server is autocommit default.
+    - https://stackoverflow.com/questions/41900988/sql-server-pyodbc-and-deadlock-errors
+- Figure out how to update db even some country's headline is not updated
+    - with the system now, the whole update process need all gnews headlines are updated.
+    - need to use `Trigger Rule`
+- use tqdm for logging
