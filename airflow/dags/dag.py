@@ -85,7 +85,7 @@ def workflow():
     
     crawl_max_num = 50
     
-    conn_str = "mssql+pyodbc://wh_updater:WorldHeadlinesUpdater99!@1.240.103.57:3021/world_headlines?driver=ODBC+Driver+17+for+SQL+Server"
+    conn_str = "mssql+pyodbc://wh_updater:WorldHeadlinesUpdater99!@1.240.103.57:3000/world_headlines?driver=ODBC+Driver+17+for+SQL+Server"
     temps_path = os.path.join(os.path.dirname(__file__), '..', 'temps')
     
     
