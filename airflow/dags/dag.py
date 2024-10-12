@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 default_args = {
     'owner'         : 'rst0070',
-    'retries'       : 0,
+    'retries'       : 2,
     'retry_delay'   : timedelta(minutes=2)
 }
 
@@ -81,7 +81,8 @@ def update_headline_by_country(
     default_args=default_args,
     description= 'updating db of world headlines',
     start_date = datetime.now(),
-    schedule_interval='@daily'
+    schedule_interval='@daily',
+    concurrency = 5
 )
 def workflow():
     
