@@ -89,7 +89,7 @@ class CrawlHeadlineHook(BaseHook, LoggingMixin):
         crawled_article_list: List[NewsArticle] = []
         driver = self._get_webdriver()
         
-        for gnews_article in gnews_article_list:
+        for idx, gnews_article in enumerate(gnews_article_list):
             
             try:
                 url, image_url, description = self._get_article_info(driver, gnews_article.url)
@@ -103,7 +103,8 @@ class CrawlHeadlineHook(BaseHook, LoggingMixin):
             except Exception as e:
                 self.log.error("couldn't get detail info of article "+repr(e))
             finally:
-                crawled_article_list.append(gnews_article)      
+                crawled_article_list.append(gnews_article)
+                self.log.info(f"crawling status: {idx+1}/{len(gnews_article_list)} done.")      
             
         driver.quit()
         
