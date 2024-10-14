@@ -13,6 +13,8 @@ import os
 from sqlalchemy import create_engine, text
 from sqlalchemy_utils import database_exists, create_database
 
+import credentials
+
 # Add the parent directory to the system path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../plugins')))
 
@@ -44,8 +46,8 @@ def mssql_conn_str() -> Generator[str, None, None]:
     Yields:
         Generator[str]: connection string to mssql DB
     """
-    conn_str_admin_test = "mssql+pyodbc://sa:WonbinsOldLaptopMssql99!@1.240.103.57:3021/world_headlines_test?driver=ODBC+Driver+17+for+SQL+Server"
-    conn_str_updater = "mssql+pyodbc://wh_updater:WorldHeadlinesUpdater99!@1.240.103.57:3021/world_headlines_test?driver=ODBC+Driver+17+for+SQL+Server"
+    conn_str_admin_test = credentials.TEST_MSSQL_ADMIN_CONN_STR
+    conn_str_updater = credentials.TEST_MSSQL_UPDATER_CONN_STR
     
     # ------------------ set up process
     engine = create_engine(conn_str_admin_test)

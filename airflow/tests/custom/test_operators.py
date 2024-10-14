@@ -16,3 +16,7 @@ def test_crawl_headline(mssql_conn_str, metadata, test_dag):
         )
         
         pytest.helpers.run_task(task=task, dag=test_dag)
+        
+def test_archive_old_articles(mssql_conn_str, test_dag):
+    
+    pass
