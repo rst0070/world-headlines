@@ -47,6 +47,21 @@ BEGIN
 		foreign key (country_code) references HEADLINE(country_code)
 	)
 END;
+
+IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='ARCHIVED_ARTICLES' AND xtype='U')
+BEGIN
+	CREATE TABLE ARCHIVED_ARTICLES (
+		row_id int IDENTITY(1, 1) primary key,
+		country_code nvarchar(2) not null,
+		url nvarchar(MAX),
+		title nvarchar(MAX),
+		description nvarchar(MAX),
+		image_url nvarchar(MAX),
+		publish_date datetime2,
+		source nvarchar(MAX),
+		foreign key (country_code) references HEADLINE(country_code)
+	)
+END;
 ---------------------- Create User & Grant permission
 ----------------------
 
@@ -60,7 +75,8 @@ BEGIN
     CREATE USER [wh_updater] FOR LOGIN [wh_updater]
 END;
 
-GRANT INSERT,SELECT,UPDATE,DELETE ON OBJECT::dbo.HEADLINE TO wh_updater;
+GRANT INSERT,SELECT,UPDATE ON OBJECT::dbo.HEADLINE TO wh_updater;
+GRANT INSERT,SELECT,UPDATE ON OBJECT::dbo.ARCHIVED_ARTICLES TO wh_updater;
 GRANT INSERT,SELECT,UPDATE,DELETE ON OBJECT::dbo.HEADLINE_ARTICLES TO wh_updater;
 GRANT INSERT,SELECT,UPDATE,DELETE ON OBJECT::dbo.CRAWLED_ARTICLES TO wh_updater;
 ---------------------- Insert data into HEADLINE

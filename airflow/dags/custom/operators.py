@@ -9,6 +9,7 @@
     
 """
 from airflow.models import BaseOperator
+from airflow.operators.python import BranchPythonOperator
 from airflow.utils.log.logging_mixin import LoggingMixin
 
 from custom.hooks import DBHook, CrawlHeadlineHook
@@ -30,6 +31,87 @@ import os
 import subprocess
 import json
 
+
+class UpdateBranchOperator(BranchPythonOperator, LoggingMixin):
+    
+    def __init__(
+        self,
+        task_id,
+        next_task_id,
+        jump_task_id,
+        time_gap:datetime.timedelta,
+        db_conn_str:str, 
+        gnews_url:str,
+        country_code:str,
+        *args,
+        **kwargs
+        ):
+        
+        
+        super(UpdateBranchOperator, self).__init__(
+            task_id = task_id, 
+            python_callable = self._branch,
+            *args,
+            **kwargs)
+
+        self.db_conn_str = db_conn_str
+        self.gnews_url = gnews_url
+        self.country_code = country_code
+        
+        self.next_task_id = next_task_id
+        self.jump_task_id = jump_task_id
+        
+        self.time_gap = time_gap
+        
+    def _branch(self):
+        
+        hook = DBHook(self.db_conn_str)
+        
+        db_update = self._get_last_update_of_db(hook)
+        gnews_update = self._get_last_update_of_gnews()
+        
+        if db_update is None:
+            return self.next_task_id
+        
+        if (db_update + self.time_gap) < gnews_update:
+            return [self.next_task_id]
+        
+        return [self.jump_task_id]
+
+    def _get_last_update_of_gnews(self) -> datetime.datetime:
+            
+        rss_req = requests.get(self.gnews_url)
+        xml_root = ET.fromstring(rss_req.text)
+        
+        last_update_str = xml_root.find('channel').find('lastBuildDate').text
+        assert type(last_update_str) is str
+        
+        last_update = scripts.gnews_gmt_str_to_datetime(last_update_str)
+        
+        self.log.info(f"last_update of GNews: {last_update}")
+        return last_update
+    
+    def _get_last_update_of_db(self, hook) -> datetime.datetime | None:
+        
+        engine: Engine = hook.get_engine()
+        
+        with engine.begin() as conn:
+            
+            result = conn.execute(
+                text(f"SELECT last_update FROM HEADLINE WHERE country_code = '{self.country_code}'")
+            )
+            
+            datetime2 = result.all()[0][0]
+            
+            self.log.info(f"last update of DB: {datetime2}")
+            if datetime2 is None:
+                return None
+            
+            
+            if type(datetime2) is datetime.datetime:
+                return datetime2
+            else:
+                return scripts.mssql_datetime2_to_datetime(datetime2) 
 
 class CrawlHeadline(BaseOperator, LoggingMixin):
     
@@ -114,7 +196,7 @@ class CrawlHeadline(BaseOperator, LoggingMixin):
             self.log.info("last_update of DB is updated!!")
             
 
-class DeleteOldArticles(BaseOperator, LoggingMixin):
+class ArchiveOldArticles(BaseOperator, LoggingMixin):
     
     def __init__(
         self,
@@ -124,13 +206,16 @@ class DeleteOldArticles(BaseOperator, LoggingMixin):
         **kwargs):
         """
         THIS IS ACTION PER COUNTRY !!!
+        
+        1. finds old articles, which is not exist in gnews headline, from the table `HEADLINE_ARTICLES`.
+        2. move the articles to the table ARCHIVED_ARTICLES.
 
         Args:
             db_conn_str (str): _description_
             country_code (str): _description_
         """
         
-        super(DeleteOldArticles, self).__init__(*args, **kwargs)
+        super(ArchiveOldArticles, self).__init__(*args, **kwargs)
         
         self.db_conn_str = db_conn_str
         self.country_code = country_code
@@ -140,10 +225,8 @@ class DeleteOldArticles(BaseOperator, LoggingMixin):
         hook = DBHook(self.db_conn_str)
         engine = hook.get_engine()
         
-        with engine.begin() as conn:
-            
+        with engine.begin() as conn:            
             conn.execute(
-                text(
                 f"""
                 IF EXISTS (
                     SELECT url 
@@ -151,18 +234,55 @@ class DeleteOldArticles(BaseOperator, LoggingMixin):
                     WHERE country_code = '{self.country_code}'
                 )
                 BEGIN
-                    DELETE FROM HEADLINE_ARTICLES
-                    WHERE 
-                        country_code = '{self.country_code}' AND
+                    INSERT INTO ARCHIVED_ARTICLES(country_code,url,title,description,image_url,publish_date,source)
+                    SELECT
+                        country_code,
+                        url,
+                        title,
+                        description,
+                        image_url,
+                        publish_date,
+                        source
+                    FROM 
+                        HEADLINE_ARTICLES ha 
+                    WHERE
                         url NOT IN (
                             SELECT url 
                             FROM CRAWLED_ARTICLES 
                             WHERE country_code = '{self.country_code}'
                         )
+                        AND url NOT IN (
+                            SELECT url 
+                            FROM ARCHIVED_ARTICLES 
+                            WHERE country_code = '{self.country_code}'
+                        );
                 END
                 """
-                )
             )
+            self.log.info("Inserting old articles into archived articles is done!")
+            
+            conn.execute(
+                f"""
+                IF EXISTS (
+                    SELECT url 
+                    FROM CRAWLED_ARTICLES 
+                    WHERE country_code = '{self.country_code}'
+                )
+                BEGIN
+                    DELETE 
+                    FROM 
+                        HEADLINE_ARTICLES
+                    WHERE
+                        url NOT IN (
+                            SELECT url 
+                            FROM CRAWLED_ARTICLES 
+                            WHERE country_code = '{self.country_code}'
+                        )
+                        AND country_code = '{self.country_code}'
+                END
+                """
+            )
+            self.log.info("deleting old articles from headline articles is done!")
             
 class InsertNewArticles(BaseOperator, LoggingMixin):
     
@@ -258,6 +378,7 @@ class PullGithubRepo(BaseOperator, LoggingMixin):
     
     def __init__(
         self,
+        task_id,
         repo_conn_str:str,
         repo_dir_path:str,
         *args, 
@@ -271,7 +392,7 @@ class PullGithubRepo(BaseOperator, LoggingMixin):
             repo_conn_str (str): _description_
             repo_dir_path (str): _description_
         """
-        super(PullGithubRepo, self).__init__(*args, **kwargs)
+        super(PullGithubRepo, self).__init__(task_id = task_id, *args, **kwargs)
         self.repo_conn_str = repo_conn_str
         self.repo_dir_path = repo_dir_path
         
@@ -281,21 +402,6 @@ class PullGithubRepo(BaseOperator, LoggingMixin):
         
         os.system(f"rm -r {self.repo_dir_path}")
         os.system(f"git clone {self.repo_conn_str} {self.repo_dir_path}")
-        
-        # if not os.path.isdir(os.path.join(self.repo_dir_path, '.git')):
-        #     msg = os.popen(
-        #         f"""mkdir -p {self.repo_dir_path} && \
-        #         git clone {self.repo_conn_str} {self.repo_dir_path}
-        #         """).read()
-            
-        #     self.log.info(msg)
-        #     self.log.info("finished process cloning repository!")
-        
-        # msg = os.popen(
-        # f"""cd {self.repo_dir_path} && \
-        # git pull origin main              
-        # """).read()
-        # self.log.info(msg)
         
         self.log.info("Pulling repository is done!")
         
@@ -439,16 +545,18 @@ class UpdateGithubRepo(BaseOperator, LoggingMixin):
         **kwargs
     ):
         super(UpdateGithubRepo, self).__init__(*args, **kwargs)
-        self.repo_dir_path = repo_dir_path
+        self.repo_dir_path = os.path.realpath(repo_dir_path)
         
     def execute(self, context):
         
         command = f"""cd {self.repo_dir_path} && \
             git add . && \
             git config --global user.email \"world.headlines.0@gmail.com\" && \
-            git config --global user.name \"Wonbin Kim\" && \
+            git config --global user.name \"Wonbin Kim\"
             git commit -m "data updated" && \
             git push origin main
         """
+        
         result = subprocess.check_output(command, shell=True, text=True)
         self.log.info(result)
+            
