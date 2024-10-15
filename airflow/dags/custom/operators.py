@@ -208,8 +208,8 @@ class ArchiveOldArticles(BaseOperator, LoggingMixin):
         THIS IS ACTION PER COUNTRY !!!
         
         1. finds old articles, which is not exist in gnews headline, from the table `HEADLINE_ARTICLES`.
-        2. move the articles to the table ARCHIVED_ARTICLES.
-
+        2. --(paused temporary) copy the articles to the table ARCHIVED_ARTICLES.
+        3. delete old articles from `HEADLINE_ARTICLES`
         Args:
             db_conn_str (str): _description_
             country_code (str): _description_
@@ -226,40 +226,40 @@ class ArchiveOldArticles(BaseOperator, LoggingMixin):
         engine = hook.get_engine()
         
         with engine.begin() as conn:            
-            conn.execute(
-                f"""
-                IF EXISTS (
-                    SELECT url 
-                    FROM CRAWLED_ARTICLES 
-                    WHERE country_code = '{self.country_code}'
-                )
-                BEGIN
-                    INSERT INTO ARCHIVED_ARTICLES(country_code,url,title,description,image_url,publish_date,source)
-                    SELECT
-                        country_code,
-                        url,
-                        title,
-                        description,
-                        image_url,
-                        publish_date,
-                        source
-                    FROM 
-                        HEADLINE_ARTICLES ha 
-                    WHERE
-                        url NOT IN (
-                            SELECT url 
-                            FROM CRAWLED_ARTICLES 
-                            WHERE country_code = '{self.country_code}'
-                        )
-                        AND url NOT IN (
-                            SELECT url 
-                            FROM ARCHIVED_ARTICLES 
-                            WHERE country_code = '{self.country_code}'
-                        );
-                END
-                """
-            )
-            self.log.info("Inserting old articles into archived articles is done!")
+            # conn.execute(
+            #     f"""
+            #     IF EXISTS (
+            #         SELECT url 
+            #         FROM CRAWLED_ARTICLES 
+            #         WHERE country_code = '{self.country_code}'
+            #     )
+            #     BEGIN
+            #         INSERT INTO ARCHIVED_ARTICLES(country_code,url,title,description,image_url,publish_date,source)
+            #         SELECT
+            #             country_code,
+            #             url,
+            #             title,
+            #             description,
+            #             image_url,
+            #             publish_date,
+            #             source
+            #         FROM 
+            #             HEADLINE_ARTICLES ha 
+            #         WHERE
+            #             url NOT IN (
+            #                 SELECT url 
+            #                 FROM CRAWLED_ARTICLES 
+            #                 WHERE country_code = '{self.country_code}'
+            #             )
+            #             AND url NOT IN (
+            #                 SELECT url 
+            #                 FROM ARCHIVED_ARTICLES 
+            #                 WHERE country_code = '{self.country_code}'
+            #             );
+            #     END
+            #     """
+            # )
+            # self.log.info("Inserting old articles into archived articles is done!")
             
             conn.execute(
                 f"""
