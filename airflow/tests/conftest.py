@@ -13,12 +13,19 @@ import os
 from sqlalchemy import create_engine, text
 from sqlalchemy_utils import database_exists, create_database
 
-import credentials
+from dotenv import load_dotenv
 
-# Add the parent directory to the system path
+# ---------------------------- load .env variables
+load_dotenv(os.path.join(os.path.dirname(__file__), '../.env'))
+TEST_MSSQL_ADMIN_CONN_STR = os.getenv('TEST_MSSQL_ADMIN_CONN_STR')
+TEST_MSSQL_UPDATER_CONN_STR = os.getenv('TEST_MSSQL_UPDATER_CONN_STR')
+
+# ---------------------------- Add the parent directory to the system path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../plugins')))
 
 pytest_plugins = ["helpers_namespace"]
+
+
 
 @pytest.fixture
 def test_dag():
@@ -46,11 +53,9 @@ def mssql_conn_str() -> Generator[str, None, None]:
     Yields:
         Generator[str]: connection string to mssql DB
     """
-    conn_str_admin_test = credentials.TEST_MSSQL_ADMIN_CONN_STR
-    conn_str_updater = credentials.TEST_MSSQL_UPDATER_CONN_STR
     
     # ------------------ set up process
-    engine = create_engine(conn_str_admin_test)
+    engine = create_engine(TEST_MSSQL_ADMIN_CONN_STR)
     if not database_exists(engine.url):
         create_database(engine.url)
         
@@ -60,7 +65,7 @@ def mssql_conn_str() -> Generator[str, None, None]:
             conn.execute(query)
 
     # ------------------ pass the connection string
-    yield conn_str_updater  
+    yield TEST_MSSQL_UPDATER_CONN_STR  
     
     # ------------------ tear down process
     with open(os.path.join(os.path.dirname(__file__), 'mssql_tear_down.sql'), 'r') as file:
