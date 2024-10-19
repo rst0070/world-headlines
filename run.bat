@@ -1,5 +1,5 @@
 cd airflow
 docker compose down
 docker build -t world-headlines-airflow .
-docker compose up
+docker compose up -d
 pause
