@@ -5,25 +5,29 @@ You can get to the web service [here: world-headlines.github.io](https://world-h
 Especially this repository's code does automatic updating process for world-headlines service using apache aiflow. 
 
 ## Overview of the updating process
-<img src="overview.png" width="600px"/>  
+<img src="overview.png" width="800px"/>  
 
 - Default scheduling term is a hour
 - Google news provides rss news information with url starting like `news.google.com/rss`
 
-## DB design
-
+## Code map
+- `airflow` - contains airflow code
+- `airflow/dags/custom` - custom codes (e.g. opertators)
+- `airflow/tests` - test codes (`pytest`)
+- `sql` - contains SQL queries initializing database
 
 ## Country codes
-Entire world-headlines system uses country codes to distinguish country dependent information.  
-[ISO_3166-1_alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) provides country identity as 2-characters. This service use this, but small letters.  
+__world-headlines__ service uses country codes to distinguish country dependent information.  
+[ISO_3166-1_alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) provides country identity as 2-characters. This service uses this, but small letters.  
 
 
-## TO DO
-- set auto commit with sqlalchemy
-    - with `autocommit=False`, deadlock happens.
-    - I thought it is not needed because the SQL Server is autocommit default.
-    - https://stackoverflow.com/questions/41900988/sql-server-pyodbc-and-deadlock-errors
-- Figure out how to update db even some country's headline is not updated
-    - with the system now, the whole update process need all gnews headlines are updated.
-    - need to use `Trigger Rule`
-- use tqdm for logging
+## How to run?
+1. Clone [frontend github repository](https://github.com/world-headlines/world-headlines.github.io) and create your github page with it
+2. Clone this repository and create `airflow/.env` file like below
+```.env
+AIRFLOW_IMAGE_NAME=world-headlines-airflow
+AIRFLOW_UID=50000
+MSSQL_CONN_STR=<your SQL Server connection string for sqlalchemy library>
+GITHUB_REPO_CONN_STR=<your github page repository connection string>
+```
+3. Run `run.sh` or `run.bat` file
