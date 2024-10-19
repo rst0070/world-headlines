@@ -1,14 +1,19 @@
 from datetime import datetime, timedelta
 from airflow.decorators import dag, task, task_group
-
 import os
 import logging
 from typing import List, Tuple
-
 from custom.hooks import DBHook
 from custom import operators
+from dotenv import load_dotenv
 
-import credentials
+load_dotenv(os.path.join(os.path.dirname(__file__), '../.env'))
+
+MSSQL_CONN_STR = os.getenv('MSSQL_CONN_STR')
+GITHUB_REPO_CONN_STR = os.getenv('GITHUB_REPO_CONN_STR')
+
+assert type(MSSQL_CONN_STR) is str, "Cannot read MSSQL_CONN_STR from airflow/.env"
+assert type(GITHUB_REPO_CONN_STR) is str, "Cannot read GITHUB_REPO_CONN_STR from airflow/.env"
 
 logger = logging.getLogger(__name__)
 
@@ -33,16 +38,13 @@ def workflow():
     crawl_max_num = 50
     update_gap = timedelta(minutes=20)
     
-    conn_str = credentials.MSSQL_CONN_STR
     temps_path = os.path.join(os.path.dirname(__file__), '..', 'temps')
     
-    
-    github_repo_conn_str = credentials.GITHUB_REPO_CONN_STR
     github_repo_local_path = os.path.join(temps_path, 'repo')
     db_export_path = os.path.join(github_repo_local_path, 'data')
     
     # --------------------- Get metadata
-    _dbhook = DBHook(conn_str)
+    _dbhook = DBHook(MSSQL_CONN_STR)
     metadata_list: List[dict] = _dbhook.get_metadata()
     
     # --------------------- Run task group
@@ -97,7 +99,7 @@ def workflow():
             check_gnews_update >> crawl_gnews >> archive_old_articles >> insert_new_articles >> delete_crawled_articles
             
         country_update = update_headline_by_country(
-            db_conn_str = conn_str,
+            db_conn_str = MSSQL_CONN_STR,
             gnews_headline_url=metadata['url'],
             country_code = metadata['country_code'],
             crawl_max_num=crawl_max_num
@@ -109,7 +111,7 @@ def workflow():
     # --------------------- Pull Github repo
     pull_repo = operators.PullGithubRepo(
         task_id = "pull_github_page_repo",
-        repo_conn_str=github_repo_conn_str,
+        repo_conn_str=GITHUB_REPO_CONN_STR,
         repo_dir_path=github_repo_local_path,
         trigger_rule = "none_failed"
     )
@@ -118,7 +120,7 @@ def workflow():
     for metadata in metadata_list:
         export_db = operators.ExportDB(
                 task_id = f"export_db_{metadata['country_code']}",
-                db_conn_str=conn_str,
+                db_conn_str=MSSQL_CONN_STR,
                 country_code=metadata['country_code'],
                 dest_dir_path=db_export_path
             )
@@ -128,7 +130,7 @@ def workflow():
     # --------------------- Export metadata to the github repo
     export_metadata = operators.ExportMetadata(
         task_id = "export_metadata_to_repo",
-        db_conn_str=conn_str,
+        db_conn_str=MSSQL_CONN_STR,
         dest_dir_path=db_export_path
     )
     # --------------------- Push to github
