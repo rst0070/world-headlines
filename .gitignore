@@ -8,3 +8,5 @@ airflow/temps
 airflow/.env
 
 .vscode
+
+git-crypt-key
