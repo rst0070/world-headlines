@@ -1,5 +1,5 @@
 import type { MetadataRoute } from 'next'
-import { getCountryCodes } from './services'
+import { getCountryCodes } from '@/services/api/country'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 

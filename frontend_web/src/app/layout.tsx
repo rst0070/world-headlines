@@ -1,17 +1,16 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
-import "./globals.css";
-import { ReactNode } from "react";
+import "@/styles/globals.css";
 import Script from "next/script";
-import { Service } from "@/services/api/service";
+import CountryNavBar from "@/components/CountryNavBar";
 
 const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
+  src: "../styles/fonts/GeistVF.woff",
   variable: "--font-geist-sans",
   weight: "100 900",
 });
 const geistMono = localFont({
-  src: "./fonts/GeistMonoVF.woff",
+  src: "../styles/fonts/GeistMonoVF.woff",
   variable: "--font-geist-mono",
   weight: "100 900",
 });
@@ -30,37 +29,11 @@ export const metadata: Metadata = {
   "عناوين الأخبار العالمية مع الترجمة."
 };
 
-function getCountryNameElement(countryCode:string, countryName:string): ReactNode {
-  return <li key={countryCode}><a href={'/'+countryCode}>{countryName}</a></li>
-}
-
-async function getCountryNameElementList(): Promise<ReactNode[]> {
-
-  const countryCodes = await Service.getCountryCodes()
-
-  let result: ReactNode[] = []
-  await Promise.all(countryCodes.map(
-    async (val, idx, arr) => {
-      const headlineMetadata = await Service.getHeadlineMetadata(val)
-      const countryNameElement = getCountryNameElement(headlineMetadata.countryCode, headlineMetadata.countryName)
-      result.push(countryNameElement)
-    }
-  ))
-
-  return new Promise(
-    async (resolve, reject) => {
-      resolve(result)
-    }
-  )
-}
-
 export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-
-  let countryElementList: ReactNode[] = await getCountryNameElementList()
 
   let result = (
     <html>
@@ -71,11 +44,7 @@ export default async function RootLayout({
                 World Headlines
               </a>
             </h1>
-            <nav>
-                <ul>
-                  {countryElementList}
-                </ul>
-            </nav>
+            <CountryNavBar />
         </header>
         <section className="translator-section" id="google_translate_element"></section>
         {children}
