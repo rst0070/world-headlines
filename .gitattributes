@@ -1,2 +1,3 @@
 backend/**/application.properties       filter=git-crypt diff=git-crypt
 backend/**/keystore.p12                 filter=git-crypt diff=git-crypt
+frontend_web/.env                       filter=git-crypt diff=git-crypt
