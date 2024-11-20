@@ -2,39 +2,8 @@ import Image from "next/image";
 import { NewsArticle } from "@/types/NewsArticle";
 import { CountryHeadline } from "@/types/CountryHeadline";
 import { ReactNode } from "react";
-import { Service } from "@/services/api/service";
+import {getHeadlineInfo, getNewsArticles} from "@/services/api/country"
 
-/**
- * Generates parameters for static page.
- * The parameters are `country_codes` from `/data/country_codes.jon`
- * @returns 
- */
-export async function generateStaticParams(): Promise<object[]> {
-
-    const countryCodes = await Service.getCountryCodes()
-
-    let param_list: object[] = [] 
-    await Promise.all(
-            countryCodes.map(
-                async (code: string)=> param_list.push({countryCode : code})
-                )
-            )
-    /**
-     * e.g.
-     * [
-     *  {country_code: "us"},
-     *  {country_code: "kr"},
-     *  {country_code: "tw"}
-     * ]
-     */
-
-    return new Promise(
-        async (resolve, reject)=>{
-
-            resolve(param_list)
-        }
-    )
-}
 
 /**
  * 
@@ -66,8 +35,8 @@ function getNewsArticleElement(newsArticle:NewsArticle, noImageUrl:string): Reac
 export default async function Page({ params }: { params: { countryCode: string } }) {
 
     const countryCode:string                = params.countryCode
-    const newsArticleList:NewsArticle[]     = await Service.getNewsArticleList(countryCode)
-    const headlineMetadata:CountryHeadline = await Service.getHeadlineMetadata(countryCode)
+    const newsArticleList:NewsArticle[]     = await getNewsArticles(countryCode)
+    const headlineMetadata:CountryHeadline = await getHeadlineInfo(countryCode)
 
     let newsArticleElements: ReactNode[] = []
     await Promise.all(newsArticleList.map(
