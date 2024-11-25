@@ -1,9 +1,10 @@
+import { environment } from "@/environment";
 import { CountryHeadline } from "@/types/CountryHeadline";
 
 
 export async function getHeadlineInfo(countryCode:string): Promise<CountryHeadline> {
     
-    let rawData = await fetch(`https://localhost/api/country/headline_info?country_code=${countryCode}`)
+    let rawData = await fetch(`${environment.backendApiUrl}/api/country/headline_info?country_code=${countryCode}`)
 
     let data = await rawData.json()
 
