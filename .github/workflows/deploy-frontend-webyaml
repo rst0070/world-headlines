@@ -10,18 +10,17 @@ on:
       - completed
     branches:
       - fix/front_build
-      
+
 jobs:
   Deploy-Production:
     runs-on: ubuntu-latest
-    # if: ${{ github.event.workflow_run.conclusion == 'success' }} # if previous run succeeded
+    if: ${{ github.event.workflow_run.conclusion == 'success' }} # if previous run succeeded
     steps:
-      # - name: Download unlocked repository
-      #   uses: actions/download-artifact@v4
-      #   with:
-      #     name: unlocked-repo
-      #     path: .
-      - uses: actions/checkout@v4
+      - name: Download unlocked repository
+        uses: actions/download-artifact@v4
+        with:
+          name: unlocked-repo
+          path: .
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
       - name: Pull Vercel Environment Information
