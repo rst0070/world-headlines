@@ -24,7 +24,7 @@ default_args = {
 }
         
 @dag(
-    dag_id = 'world-headline-workflow',
+    dag_id = 'world-headlines-crawler',
     default_args=default_args,
     description= 'updating db of world headlines',
     start_date = datetime(2024, 10, 14),
@@ -108,39 +108,41 @@ def workflow():
         
         task_groups.append(country_update)
         
-    # --------------------- Pull Github repo
-    pull_repo = operators.PullGithubRepo(
-        task_id = "pull_github_page_repo",
-        repo_conn_str=GITHUB_REPO_CONN_STR,
-        repo_dir_path=github_repo_local_path,
-        trigger_rule = "none_failed"
-    )
-    # --------------------- Export DB data to the github repo
-    tasks = []
-    for metadata in metadata_list:
-        export_db = operators.ExportDB(
-                task_id = f"export_db_{metadata['country_code']}",
-                db_conn_str=MSSQL_CONN_STR,
-                country_code=metadata['country_code'],
-                dest_dir_path=db_export_path
-            )
+    # # --------------------- Pull Github repo
+    # pull_repo = operators.PullGithubRepo(
+    #     task_id = "pull_github_page_repo",
+    #     repo_conn_str=GITHUB_REPO_CONN_STR,
+    #     repo_dir_path=github_repo_local_path,
+    #     trigger_rule = "none_failed"
+    # )
+    # # --------------------- Export DB data to the github repo
+    # tasks = []
+    # for metadata in metadata_list:
+    #     export_db = operators.ExportDB(
+    #             task_id = f"export_db_{metadata['country_code']}",
+    #             db_conn_str=MSSQL_CONN_STR,
+    #             country_code=metadata['country_code'],
+    #             dest_dir_path=db_export_path
+    #         )
 
-        tasks.append(export_db)
+    #     tasks.append(export_db)
     
-    # --------------------- Export metadata to the github repo
-    export_metadata = operators.ExportMetadata(
-        task_id = "export_metadata_to_repo",
-        db_conn_str=MSSQL_CONN_STR,
-        dest_dir_path=db_export_path
-    )
-    # --------------------- Push to github
-    update_github_repo = operators.UpdateGithubRepo(
-        task_id = "update_github_repo",
-        repo_dir_path=github_repo_local_path
-    )
+    # # --------------------- Export metadata to the github repo
+    # export_metadata = operators.ExportMetadata(
+    #     task_id = "export_metadata_to_repo",
+    #     db_conn_str=MSSQL_CONN_STR,
+    #     dest_dir_path=db_export_path
+    # )
+    # # --------------------- Push to github
+    # update_github_repo = operators.UpdateGithubRepo(
+    #     task_id = "update_github_repo",
+    #     repo_dir_path=github_repo_local_path
+    # )
     
     
-    task_groups >> pull_repo >> tasks >> export_metadata >> update_github_repo
+    # task_groups >> pull_repo >> tasks >> export_metadata >> update_github_repo
+    
+    task_groups
     
     
     

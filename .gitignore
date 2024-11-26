@@ -5,7 +5,6 @@ __pycache__
 airflow/logs
 airflow/postgres
 airflow/temps
-airflow/.env
 
 .vscode
 
