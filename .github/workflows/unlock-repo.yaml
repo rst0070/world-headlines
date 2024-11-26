@@ -13,7 +13,8 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y git-crypt
-          echo ${{ secrets.GIT_CRYPT_KEY }} | base64 -d | git-crypt unlock -
+          echo ${{ secrets.GIT_CRYPT_KEY }} | base64 -d > ./git-crypt-key
+          git-crypt unlock ./git-crypt-key
       # Add a step to persist the unlocked state
       - name: Upload unlocked repository
         uses: actions/upload-artifact@v4

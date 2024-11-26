@@ -11,3 +11,5 @@ airflow/.env
 
 git-crypt-key
 .vercel
+
+tmp
