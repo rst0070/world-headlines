@@ -16,12 +16,12 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y git-crypt
 
-      -name: Save secret file
+      - name: Save secret file
         run: |
           echo ${{ secrets.GIT_CRYPT_KEY }} > ./encoded-key
           base64 -d ./encoded-key > ./decoded-key
 
-      -name: Unlock repo
+      - name: Unlock repo
         run: git-crypt unlock ./decoded-key
       
       - name: Upload unlocked repository # Add a step to persist the unlocked state
