@@ -15,7 +15,7 @@ jobs:
     if: ${{ github.event.workflow_run.conclusion == 'success' }} # if previous run succeeded
     steps:
       - name: Download unlocked repository
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: unlocked-repo
           path: .

@@ -8,7 +8,7 @@ jobs:
   unlock:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Unlock git-crypt
         run: |
           sudo apt-get update
@@ -16,7 +16,7 @@ jobs:
           echo ${{ secrets.GIT_CRYPT_KEY }} | base64 -d | git-crypt unlock -
       # Add a step to persist the unlocked state
       - name: Upload unlocked repository
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: unlocked-repo
           path: .
