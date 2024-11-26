@@ -2,17 +2,15 @@ name: Frontend Web, Vercel Production Deployment
 env:
   VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
   VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
 on:
-  push:
+  workflow_run:
+    workflows: ["Git Crypt Unlock"]
+    types:
+      - completed
     branches:
       - fix/front_build
-# on:
-#   workflow_run:
-#     workflows: ["Git Crypt Unlock"]
-#     types:
-#       - completed
-#     branches:
-#       - fix/front_build
+      
 jobs:
   Deploy-Production:
     runs-on: ubuntu-latest
