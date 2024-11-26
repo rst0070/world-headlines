@@ -2,7 +2,6 @@ name: Git Crypt Unlock
 on:
   push:
     branches:
-      - main
       - fix/front_build
 
 jobs:
