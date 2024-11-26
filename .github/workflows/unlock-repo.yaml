@@ -1,0 +1,22 @@
+name: Git Crypt Unlock
+on:
+  push:
+    branches:
+      - fix/front_build
+
+jobs:
+  unlock:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Unlock git-crypt
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y git-crypt
+          echo ${{ secrets.GIT_CRYPT_KEY }} | base64 -d | git-crypt unlock -
+      # Add a step to persist the unlocked state
+      - name: Upload unlocked repository
+        uses: actions/upload-artifact@v2
+        with:
+          name: unlocked-repo
+          path: .
