@@ -3,22 +3,27 @@ env:
   VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
   VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 on:
-  workflow_run:
-    workflows: ["Git Crypt Unlock"]
-    types:
-      - completed
+  push:
     branches:
       - fix/front_build
+# on:
+#   workflow_run:
+#     workflows: ["Git Crypt Unlock"]
+#     types:
+#       - completed
+#     branches:
+#       - fix/front_build
 jobs:
   Deploy-Production:
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }} # if previous run succeeded
+    # if: ${{ github.event.workflow_run.conclusion == 'success' }} # if previous run succeeded
     steps:
-      - name: Download unlocked repository
-        uses: actions/download-artifact@v4
-        with:
-          name: unlocked-repo
-          path: .
+      # - name: Download unlocked repository
+      #   uses: actions/download-artifact@v4
+      #   with:
+      #     name: unlocked-repo
+      #     path: .
+      - uses: actions/checkout@v4
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
       - name: Pull Vercel Environment Information
