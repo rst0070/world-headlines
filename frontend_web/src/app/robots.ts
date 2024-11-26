@@ -1,5 +1,5 @@
 import type { MetadataRoute } from 'next'
- 
+import { environment } from '@/environment'
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: {
@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: '/',
       disallow: '/private/',
     },
-    sitemap: "https://world-headlines.github.io/sitemap.xml",
+    sitemap: `${environment.siteUrlPrefix}/sitemap.xml`,
   }
 }

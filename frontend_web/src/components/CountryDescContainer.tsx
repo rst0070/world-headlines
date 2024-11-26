@@ -8,7 +8,7 @@ function CountryDesc(
     let flag_alt = "link for "+countryName+"'s headline"
     
     return (
-        <div className="country-desc" key={"desc-element-"+countryCode}>
+        <div className="country-desc">
             <a href={"/country/"+countryCode}>
               <img src={flag_src} alt={flag_alt} width={180} height={135}/>
               <p>Click to catch up latest headline news from {countryName}</p>
@@ -26,7 +26,12 @@ export default async function CountryDescContainer(){
     await Promise.all(countryCodes.map(
         async (val, idx, arr) => {
             const headlineMetadata = await getHeadlineInfo(val)
-            const element = <CountryDesc countryCode={headlineMetadata.countryCode} countryName={headlineMetadata.countryName} />;
+            const element = 
+                <CountryDesc 
+                    countryCode={headlineMetadata.countryCode} 
+                    countryName={headlineMetadata.countryName} 
+                    key={idx}
+                />;
             countryDescElements.push(element)
         }
     ))

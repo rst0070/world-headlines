@@ -15,7 +15,7 @@ export default function NewsItem(
         image_tag = <img src={newsArticle.imageUrl} alt="" width={280} height={168}/>;
 
     return (
-        <div className="news-item" key={newsArticle.url + newsArticle.title}>
+        <div className="news-item">
             {image_tag}
             <div className="news-details">
                 <h3><a href={newsArticle.url} target="_blank">{newsArticle.title}</a></h3>

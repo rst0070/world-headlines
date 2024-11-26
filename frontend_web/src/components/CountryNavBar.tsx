@@ -3,7 +3,7 @@ import { getCountryCodes, getHeadlineInfo } from "@/services/api/country";
 
 function CountryName({countryCode, countryName} : {countryCode:string, countryName:string}){
     return (
-        <li key={countryCode}>
+        <li>
             <a href={'/country/'+countryCode}>
                 {countryName}
             </a>
@@ -23,6 +23,7 @@ async function CountryNameContainer({countryCodes}: {countryCodes:string[]}){
                     <CountryName
                         countryCode={countryCode}
                         countryName={countryName}
+                        key={idx}
                     />
                 )
             }

@@ -1,10 +1,11 @@
 import type { MetadataRoute } from 'next'
 import { getCountryCodes } from '@/services/api/country'
+import { environment } from '@/environment'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     let countryCodes: string[] = await getCountryCodes()
-    let prefix:string = "https://world-headlines.github.io/"
+    let prefix:string = environment.siteUrlPrefix
 
     
     let result: MetadataRoute.Sitemap = [
@@ -19,7 +20,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     await Promise.all(countryCodes.map(async (val, idx, arr)=>{
         result.push(
             {
-                url: prefix+val,
+                url: prefix+"/country/"+val,
                 lastModified: new Date(),
                 changeFrequency: 'hourly',
                 priority: 1,

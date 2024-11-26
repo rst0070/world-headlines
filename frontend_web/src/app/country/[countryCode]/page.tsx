@@ -15,7 +15,7 @@ export default async function Page(props: { params: Promise<{ countryCode: strin
     let newsArticleElements: ReactNode[] = []
     await Promise.all(newsArticleList.map(
         (val, idx, arr) => {
-            const element = (<NewsItem newsArticle={val} noImageUrl="https://example.com/empty.png"></NewsItem>);
+            const element = (<NewsItem newsArticle={val} noImageUrl="https://example.com/empty.png" key={idx}></NewsItem>);
             newsArticleElements.push(element)
         }
     ))
