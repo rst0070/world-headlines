@@ -10,3 +10,6 @@ airflow/.env
 .vscode
 
 git-crypt-key
+.vercel
+
+tmp
