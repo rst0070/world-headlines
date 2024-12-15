@@ -4,6 +4,11 @@ set -e
 cd `dirname $0`
 ROOT_DIR=`pwd`/../..
 
+# Down existing containers
+echo "Cleaning existing containers..."
+docker compose -f $ROOT_DIR/scripts/dev/compose.yaml down --volumes
+echo "Cleaning containers done."
+
 # Load environment variables from .env file
 # This wil automatically set env vars for frontend (other containers use build)
 env_path=$ROOT_DIR/scripts/dev/.env
@@ -13,7 +18,7 @@ fi
 
 # Start containers
 echo "Starting Database, Airflow, and Backend..."
-docker compose -f $ROOT_DIR/scripts/dev/compose.yaml up -d #--build
+docker compose -f $ROOT_DIR/scripts/dev/compose.yaml up -d --build
 echo "Containers started."
 
 # Tail logs
