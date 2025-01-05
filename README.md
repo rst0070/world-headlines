@@ -1,6 +1,6 @@
 # world-headlines
 __world-headlines__ is a service, providing headline news from various countries. 
-You can get to the web service [here: world-headlines.github.io](https://world-headlines.github.io).  
+You can get to the web service [here: world-headlines.vercel.app](https://world-headlines.vercel.app/).  
   
 Especially this repository's code does automatic updating process for world-headlines service using apache aiflow. 
 
