@@ -68,7 +68,7 @@ public class CountryRepositoryImpl implements CountryRepository {
         HeadlineInfo result = new HeadlineInfo();
         result.setCountryCode(map.get("country_code").toString());
         result.setCountryName(map.get("country_name").toString());
-        result.setLastUpdate(map.get("last_update").toString());
+        result.setLastUpdate(map.get("last_update") != null ? map.get("last_update").toString() : null);
 
         return result;
     }

@@ -174,17 +174,9 @@ class CrawlHeadline(BaseOperator, LoggingMixin):
             conn.execute(
                 text(
                 """
-                IF NOT EXISTS (
-                    SELECT 1
-                    FROM CRAWLED_ARTICLES
-                    WHERE
-                        country_code = :country_code
-                        and url = :url
-                )
-                BEGIN
-                    INSERT INTO CRAWLED_ARTICLES(country_code,url,title,description,image_url,publish_date,source)
-                    VALUES(:country_code,:url,:title,:description,:image_url,:publish_date,:source)
-                END
+                INSERT INTO CRAWLED_ARTICLES(country_code,url,title,description,image_url,publish_date,source)
+                VALUES(:country_code,:url,:title,:description,:image_url,:publish_date,:source)
+                ON CONFLICT (country_code,url) DO NOTHING
                 """),
                 articles
             )
@@ -262,25 +254,17 @@ class ArchiveOldArticles(BaseOperator, LoggingMixin):
             # self.log.info("Inserting old articles into archived articles is done!")
             
             conn.execute(
+                text(
                 f"""
-                IF EXISTS (
+                DELETE FROM HEADLINE_ARTICLES
+                WHERE country_code = '{self.country_code}'
+                AND url NOT IN (
                     SELECT url 
                     FROM CRAWLED_ARTICLES 
                     WHERE country_code = '{self.country_code}'
                 )
-                BEGIN
-                    DELETE 
-                    FROM 
-                        HEADLINE_ARTICLES
-                    WHERE
-                        url NOT IN (
-                            SELECT url 
-                            FROM CRAWLED_ARTICLES 
-                            WHERE country_code = '{self.country_code}'
-                        )
-                        AND country_code = '{self.country_code}'
-                END
                 """
+                )
             )
             self.log.info("deleting old articles from headline articles is done!")
             
