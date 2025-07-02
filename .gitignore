@@ -17,3 +17,5 @@ tmp
 scripts/dev/logs/**
 
 .DS_Store
+
+.env
