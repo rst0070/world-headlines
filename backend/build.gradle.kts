@@ -9,7 +9,7 @@ version = "0.0.1-SNAPSHOT"
 
 java {
 	toolchain {
-		languageVersion = JavaLanguageVersion.of(17)
+		languageVersion = JavaLanguageVersion.of(21)
 	}
 }
 
@@ -37,4 +37,11 @@ tasks.withType<Test> {
 
 tasks.named<Jar>("jar") {
 	enabled = false
+}
+
+
+tasks.named<org.springframework.boot.gradle.tasks.run.BootRun>("bootRun") {
+    environment("JDBC_DB_CONN_STR", "jdbc:postgresql://localhost:5432/world_headlines")
+    environment("JDBC_DB_USERNAME", "wh_updater")
+    environment("JDBC_DB_PASSWORD", "wh_updater")
 }

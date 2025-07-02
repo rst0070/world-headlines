@@ -1,5 +1,5 @@
 # Use the Gradle image to build the project
-FROM gradle:8.11.0-jdk17-corretto AS build
+FROM gradle:8.14.2-jdk21-noble AS build
 # Set the working directory inside the container
 WORKDIR /app
 # Copy the Gradle project files
@@ -8,7 +8,7 @@ COPY . .
 RUN gradle clean build
 
 # Use a lightweight JRE for running the app
-FROM openjdk:17-jdk-slim
+FROM openjdk:21-jdk-slim
 
 # Set the working directory inside the container
 WORKDIR /app

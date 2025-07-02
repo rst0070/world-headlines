@@ -15,9 +15,6 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/**").permitAll()
                 .anyRequest().authenticated()
-            )
-            .requiresChannel(channel -> channel
-                .anyRequest().requiresSecure()  // Requires HTTPS for all requests
             );
         return http.build();
     }

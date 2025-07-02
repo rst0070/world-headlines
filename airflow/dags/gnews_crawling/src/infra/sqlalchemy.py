@@ -21,6 +21,7 @@ async def init_table(
     engine: AsyncEngine,
     table_name: str,
     table_structure: str,
+    partition_by: str,
 ):
     try:
         async with engine.begin() as conn:
@@ -30,6 +31,14 @@ async def init_table(
                 CREATE TABLE IF NOT EXISTS {table_name}(
                     {table_structure}
                 )
+                """
+                )
+            )
+
+            await conn.execute(
+                text(
+                f"""
+                CREATE TABLE IF NOT EXISTS {table_name}_{partition_by.replace("-", "_")} PARTITION OF {table_name} FOR VALUES IN ('{partition_by}')
                 """
                 )
             )

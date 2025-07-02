@@ -15,7 +15,6 @@ async def load_news_article_batch(
                 f"""
                 INSERT INTO {table_name} (country_code, url, title, description, image_url, publish_date, source)
                 VALUES (:country_code, :url, :title, :description, :image_url, :publish_date, :source)
-                ON CONFLICT (country_code, url) DO NOTHING
                 """
             ),
             article_list,

@@ -76,14 +76,15 @@ async def extract_article_details(
         # Navigate to the URL
         await page.goto(article.url)
 
-        await page.evaluate("""
-            () => {
-                const interval = setInterval(() => {
-                    if (!window.location.href.includes('google.com')) {
-                        clearInterval(interval);
-                    }
-                }, 100);
-            }""")
+        await page.wait_for_timeout(10000)
+        # await page.evaluate("""
+        #     () => {
+        #         const interval = setInterval(() => {
+        #             if (!window.location.href.includes('google.com')) {
+        #                 clearInterval(interval);
+        #             }
+        #         }, 100);
+        #     }""")
 
         article_url = page.url
         if article_url == "about:blank":

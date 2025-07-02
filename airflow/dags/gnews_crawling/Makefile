@@ -12,3 +12,8 @@ push:
 	docker push $(REMOTE)/$(REPOSITORY):$(IMAGE_TAG)
 
 all: login build push
+
+.ONESHELL:
+run:
+	export ENV=local
+	poetry run python -m src.etl

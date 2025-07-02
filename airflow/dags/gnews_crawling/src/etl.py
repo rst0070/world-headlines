@@ -54,18 +54,31 @@ async def main(
     logger.info("Initializing infra")
     load_env()
 
+    db_user = os.getenv("WORLD_HEADLINES_DB_USER")
+    db_password = os.getenv("WORLD_HEADLINES_DB_PASSWORD")
+    db_host = os.getenv("WORLD_HEADLINES_DB_HOST")
+    db_port = os.getenv("WORLD_HEADLINES_DB_PORT")
+    db_name = os.getenv("WORLD_HEADLINES_DB_NAME")
+
+    assert db_user is not None
+    assert db_password is not None
+    assert db_host is not None
+    assert db_port is not None
+    assert db_name is not None
+
     sql_engine = get_async_engine(
-        db_user=os.getenv("WORLD_HEADLINES_DB_USER"),
-        db_password=os.getenv("WORLD_HEADLINES_DB_PASSWORD"),
-        db_host=os.getenv("WORLD_HEADLINES_DB_HOST"),
-        db_port=int(os.getenv("WORLD_HEADLINES_DB_PORT")),
-        db_name=os.getenv("WORLD_HEADLINES_DB_NAME"),
+        db_user=db_user,
+        db_password=db_password,
+        db_host=db_host,
+        db_port=int(db_port),
+        db_name=db_name,
     )
 
     await init_table(
         sql_engine,
         dst_table_name,
         NewsArticle.get_table_structure(),
+        datetime_from.strftime("%Y-%m-%d"),
     )
     
     
@@ -169,10 +182,10 @@ async def main(
 
     ## feed initializing data
     for item in GNEWS_RSS_URLS:
-        queue0.put_nowait(item)
+        await queue0.put(item)
     
     for _ in range(num_step1_workers):
-        queue0.put_nowait(None)
+        await queue0.put(None)
     
     ## run
     await asyncio.gather(*steps, return_exceptions=True)
@@ -184,11 +197,11 @@ async def main(
 
 
 if __name__ == "__main__":
-    time_now = datetime.now()
+    time_now = datetime.now(datetime.UTC)
     asyncio.run(
         main(
             datetime_from=time_now - timedelta(hours=1),
             datetime_until=time_now,
-            dst_table_name="GNEWS_ARTICLES",
+            dst_table_name="HEADLINE_ARTICLES",
         )
     )
