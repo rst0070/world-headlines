@@ -15,7 +15,7 @@ from src.task.extract import extract_gnews_rss, extract_article_details
 from src.task.transform import transform_article_type
 from src.task.load import load_news_article_batch
 import asyncio
-from datetime import datetime
+from datetime import datetime, timedelta
 import logging
 import os
 
@@ -55,11 +55,11 @@ async def main(
     load_env()
 
     sql_engine = get_async_engine(
-        db_user=os.getenv("DB_USER"),
-        db_password=os.getenv("DB_PASSWORD"),
-        db_host=os.getenv("DB_HOST"),
-        db_port=int(os.getenv("DB_PORT")),
-        db_name=os.getenv("DB_NAME"),
+        db_user=os.getenv("WORLD_HEADLINES_DB_USER"),
+        db_password=os.getenv("WORLD_HEADLINES_DB_PASSWORD"),
+        db_host=os.getenv("WORLD_HEADLINES_DB_HOST"),
+        db_port=int(os.getenv("WORLD_HEADLINES_DB_PORT")),
+        db_name=os.getenv("WORLD_HEADLINES_DB_NAME"),
     )
 
     await init_table(
@@ -184,10 +184,11 @@ async def main(
 
 
 if __name__ == "__main__":
+    time_now = datetime.now()
     asyncio.run(
         main(
-            datetime_from=datetime(2025, 6, 3),
-            datetime_until=datetime(2025, 6, 4),
+            datetime_from=time_now - timedelta(hours=1),
+            datetime_until=time_now,
             dst_table_name="GNEWS_ARTICLES",
         )
     )
