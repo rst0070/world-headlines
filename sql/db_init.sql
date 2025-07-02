@@ -27,9 +27,13 @@ CREATE TABLE IF NOT EXISTS HEADLINE_ARTICLES(
 	image_url text,
 	publish_date timestamp,
 	source text,
-	primary key (country_code, url),
+
+	en_title text NULL,
+	en_description text NULL,
+
+	-- primary key (country_code, url),
 	foreign key (country_code) references HEADLINE(country_code)
-)PARTITION BY LIST(country_code);
+)PARTITION BY LIST(date_trunc('day', publish_date));
 
 CREATE TABLE IF NOT EXISTS CRAWLED_ARTICLES(
 	country_code char(2),
@@ -39,9 +43,9 @@ CREATE TABLE IF NOT EXISTS CRAWLED_ARTICLES(
 	image_url text,
 	publish_date timestamp,
 	source text,
-	primary key (country_code, url),
+	-- primary key (country_code, url),
 	foreign key (country_code) references HEADLINE(country_code)
-)PARTITION BY LIST(country_code);
+)PARTITION BY LIST(date_trunc('day', publish_date));
 
 
 ---------------------- Create User & Grant permission
@@ -89,7 +93,5 @@ VALUES
 	-- ('Israel', 'il', 'https://news.google.com/rss/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRFZxYUdjU0FtbDNHZ0pKVENnQVAB?ceid=IL:he&oc=3'),
 	-- ('Lebanon', 'lb', 'https://news.google.com/rss/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRFZxYUdjU0FtRnlHZ0pNUWlnQVAB?ceid=LB:ar&oc=3');
 
-CREATE TABLE CRAWLED_ARTICLES_us PARTITION OF CRAWLED_ARTICLES FOR VALUES IN ('us');
-CREATE TABLE CRAWLED_ARTICLES_kr PARTITION OF CRAWLED_ARTICLES FOR VALUES IN ('kr');
-CREATE TABLE HEADLINE_ARTICLES_us PARTITION OF HEADLINE_ARTICLES FOR VALUES IN ('us');
-CREATE TABLE HEADLINE_ARTICLES_kr PARTITION OF HEADLINE_ARTICLES FOR VALUES IN ('kr');
+-- CREATE TABLE HEADLINE_ARTICLES_us PARTITION OF HEADLINE_ARTICLES FOR VALUES IN ('us');
+-- CREATE TABLE HEADLINE_ARTICLES_kr PARTITION OF HEADLINE_ARTICLES FOR VALUES IN ('kr');
