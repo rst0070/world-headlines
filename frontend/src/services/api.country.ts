@@ -1,23 +1,16 @@
-import { environment } from "@/environment";
-import { CountryHeadline } from "@/types/CountryHeadline";
+import type { CountryHeadline } from "../types/Country";
 
 export async function getCountryCodes(): Promise<string[]>{
-  let url = `${environment.backendApiUrl}/api/country/country_codes`
-  console.log("sending request to " + url)
-  let data = await fetch(url)
-
-  let result = await data.json()
+  let url = `/api/v1/country/country_codes`
+  let response = await fetch(url)
+  let data = (await response.json()) as {data: string[]}
   
-  return new Promise(
-      (resolve, reject) => {
-          resolve(result)
-      }
-  );
+  return data.data
 }
 
 export async function getHeadlineInfo(countryCode:string): Promise<CountryHeadline> {
     
-  let rawData = await fetch(`${environment.backendApiUrl}/api/country/headline_info?country_code=${countryCode}`)
+  let rawData = await fetch(`/api/country/headline_info?country_code=${countryCode}`)
 
   let data = await rawData.json()
 

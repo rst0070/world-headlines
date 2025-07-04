@@ -20,7 +20,9 @@ const Layout: React.FC<LayoutProps> = (props: LayoutProps) => {
         <NavBar countryCodes={countryCodes} />
       </header>
       <section className="translator-section" id="google_translate_element"></section>
-      {children}
+      <main className="flex flex-col w-full">
+        {children}
+      </main>
     </>
   )
 }
