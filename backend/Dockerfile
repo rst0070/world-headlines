@@ -8,7 +8,7 @@ COPY . .
 RUN gradle clean build
 
 # Use a lightweight JRE for running the app
-FROM openjdk:21-jdk-slim
+FROM openjdk:25-ea-21-jdk-slim-bookworm
 
 # Set the working directory inside the container
 WORKDIR /app

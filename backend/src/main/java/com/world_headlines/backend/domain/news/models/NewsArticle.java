@@ -1,4 +1,4 @@
-package com.world_headlines.backend.core.country.models;
+package com.world_headlines.backend.domain.news.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
