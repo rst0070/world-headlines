@@ -32,7 +32,7 @@ services:
       - JDBC_DB_USERNAME=wh_updater
       - JDBC_DB_PASSWORD=wh_updater
     ports:
-      - "443:443"
+      - "8080:8080"
   
   frontend:
     container_name: wh-frontend
