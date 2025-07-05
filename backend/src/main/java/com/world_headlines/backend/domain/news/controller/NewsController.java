@@ -50,7 +50,8 @@ public class NewsController {
                     countryCode, 
                     oneDayAgo, 
                     now, 
-                    1
+                    1,
+                    true
                 ).get(0)
             );
         }
@@ -77,18 +78,18 @@ public class NewsController {
     @GetMapping("/articles")
     public ResponseDTO<List<NewsArticle>> getNewsArticles(
         @RequestParam String countryCode, 
-        @RequestParam String fromDateStr, 
-        @RequestParam String toDateStr, 
+        @RequestParam String fromDate, 
+        @RequestParam String toDate, 
         @RequestParam int size
     ) {
-        ZonedDateTime fromDate = ZonedDateTime.parse(fromDateStr);
-        ZonedDateTime toDate = ZonedDateTime.parse(toDateStr);
+        ZonedDateTime fromDateZoned = ZonedDateTime.parse(fromDate);
+        ZonedDateTime toDateZoned = ZonedDateTime.parse(toDate);
 
         System.out.println("fromDate: " + fromDate);
         System.out.println("toDate: " + toDate);
         System.out.println("size: " + size);
 
-        List<NewsArticle> newsArticleList = newsService.getNewsArticleList(countryCode, fromDate, toDate, size);
+        List<NewsArticle> newsArticleList = newsService.getNewsArticleList(countryCode, fromDateZoned, toDateZoned, size, false);
 
         ResponseDTO<List<NewsArticle>> response = new ResponseDTO<>();
         response.setData(newsArticleList);

@@ -18,6 +18,7 @@ public interface NewsRepository {
         String countryCode, 
         ZonedDateTime fromDate, 
         ZonedDateTime toDate, 
-        int size
+        int size,
+        boolean shouldHaveImage
     );
 }

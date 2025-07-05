@@ -11,6 +11,7 @@ public interface NewsService {
         String countryCode, 
         ZonedDateTime fromDate, 
         ZonedDateTime toDate, 
-        int size
+        int size,
+        boolean shouldHaveImage
     );
 }

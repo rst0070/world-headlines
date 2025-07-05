@@ -21,8 +21,9 @@ public class NewsServiceImpl implements NewsService {
         String countryCode, 
         ZonedDateTime fromDate, 
         ZonedDateTime toDate, 
-        int size
+        int size,
+        boolean shouldHaveImage
     ) {
-        return newsRepository.findNewsArticles(countryCode, fromDate, toDate, size);
+        return newsRepository.findNewsArticles(countryCode, fromDate, toDate, size, shouldHaveImage);
     }
 }

@@ -29,7 +29,7 @@ public class MetadataRepositoryImpl implements MetadataRepository {
                 SELECT
                     country_code
                 FROM
-                    HEADLINE;
+                    GNEWS_HEADLINE;
                 """
             );
 
@@ -53,7 +53,7 @@ public class MetadataRepositoryImpl implements MetadataRepository {
                 country_name,
                 last_update
             FROM
-                HEADLINE
+                GNEWS_HEADLINE
             WHERE
                 country_code = :country_code
             """;        

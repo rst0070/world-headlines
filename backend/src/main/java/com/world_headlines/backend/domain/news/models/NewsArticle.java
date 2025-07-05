@@ -27,4 +27,15 @@ public class NewsArticle {
     @JsonProperty("source")
     private String source;
 
+    @JsonProperty("en_title")
+    private String enTitle;
+
+    @JsonProperty("en_description")
+    private String enDescription;
+
+    @JsonProperty("en_topics")
+    private String[] enTopics;
+
+    @JsonProperty("en_keywords")
+    private String[] enKeywords;
 }
