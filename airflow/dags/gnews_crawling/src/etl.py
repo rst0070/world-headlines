@@ -12,10 +12,12 @@ from sqlalchemy.ext.asyncio import AsyncEngine
 from typing import List, Tuple, Dict
 
 from src.task.extract import extract_gnews_rss, extract_article_details
-from src.task.transform import transform_article_type
+from src.task.transform import transform_news_translation, transform_article_type
 from src.task.load import load_news_article_batch
+from src.component.llm import LLMClient
+from src.infra.litellm import get_litellm_router
 import asyncio
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 import logging
 import os
 
@@ -29,19 +31,19 @@ init_logging(
 logger = logging.getLogger(__name__)
 
 GNEWS_RSS_URLS = [
-    ('us', 'https://news.google.com/rss/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRFZxYUdjU0FtVnVHZ0pWVXlnQVAB?ceid=US:en&oc=3'),
-	('kr', 'https://news.google.com/rss/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRFZxYUdjU0FtdHZHZ0pMVWlnQVAB?ceid=KR:ko&oc=3'),
-	#('cn', 'https://news.google.com/rss/topics/CAAqKggKIiRDQkFTRlFvSUwyMHZNRFZxYUdjU0JYcG9MVU5PR2dKRFRpZ0FQAQ?ceid=CN:zh-Hans&oc=3'),
-	#('in', 'https://news.google.com/rss/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRFZxYUdjU0FtaHBHZ0pKVGlnQVAB?ceid=IN:hi&oc=3'),
-	#('de', 'https://news.google.com/rss/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRFZxYUdjU0FtUmxHZ0pFUlNnQVAB?ceid=DE:de&oc=3'),
-	#('fr', 'https://news.google.com/rss/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRFZxYUdjU0FtWnlHZ0pHVWlnQVAB?ceid=FR:fr&oc=3'),
-	#('jp', 'https://news.google.com/rss/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRFZxYUdjU0FtcGhHZ0pLVUNnQVAB?ceid=JP:ja&oc=3'),
-	#('br', 'https://news.google.com/rss/topics/CAAqKggKIiRDQkFTRlFvSUwyMHZNRFZxYUdjU0JYQjBMVUpTR2dKQ1VpZ0FQAQ?ceid=BR:pt-419&oc=3&hl=pt-BR&gl=BR'),
-	#('ru', 'https://news.google.com/rss/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRFZxYUdjU0FuSjFHZ0pTVlNnQVAB?ceid=RU:ru&oc=3'),
-	#('gb', 'https://news.google.com/rss/topics/CAAqKggKIiRDQkFTRlFvSUwyMHZNRFZxYUdjU0JXVnVMVWRDR2dKSFFpZ0FQAQ?ceid=GB:en&oc=3'),
-	#('tw', 'https://news.google.com/rss/topics/CAAqKggKIiRDQkFTRlFvSUwyMHZNRFZxYUdjU0JYcG9MVlJYR2dKVVZ5Z0FQAQ?ceid=TW:zh-Hant&oc=3'),
-	#('il', 'https://news.google.com/rss/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRFZxYUdjU0FtbDNHZ0pKVENnQVAB?ceid=IL:he&oc=3'),
-	#('lb', 'https://news.google.com/rss/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRFZxYUdjU0FtRnlHZ0pNUWlnQVAB?ceid=LB:ar&oc=3')
+    ('us', 'English', 'https://news.google.com/rss/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRFZxYUdjU0FtVnVHZ0pWVXlnQVAB?ceid=US:en&oc=3'),
+	('kr', 'Korean', 'https://news.google.com/rss/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRFZxYUdjU0FtdHZHZ0pMVWlnQVAB?ceid=KR:ko&oc=3'),
+	('cn', 'Chinese', 'https://news.google.com/rss/topics/CAAqKggKIiRDQkFTRlFvSUwyMHZNRFZxYUdjU0JYcG9MVU5PR2dKRFRpZ0FQAQ?ceid=CN:zh-Hans&oc=3'),
+	('in', 'Hindi', 'https://news.google.com/rss/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRFZxYUdjU0FtaHBHZ0pKVGlnQVAB?ceid=IN:hi&oc=3'),
+	('de', 'German', 'https://news.google.com/rss/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRFZxYUdjU0FtUmxHZ0pFUlNnQVAB?ceid=DE:de&oc=3'),
+	('fr', 'French', 'https://news.google.com/rss/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRFZxYUdjU0FtWnlHZ0pHVWlnQVAB?ceid=FR:fr&oc=3'),
+	('jp', 'Japanese', 'https://news.google.com/rss/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRFZxYUdjU0FtcGhHZ0pLVUNnQVAB?ceid=JP:ja&oc=3'),
+	('br', 'Portuguese', 'https://news.google.com/rss/topics/CAAqKggKIiRDQkFTRlFvSUwyMHZNRFZxYUdjU0JYQjBMVUpTR2dKQ1VpZ0FQAQ?ceid=BR:pt-419&oc=3&hl=pt-BR&gl=BR'),
+	('ru', 'Russian', 'https://news.google.com/rss/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRFZxYUdjU0FuSjFHZ0pTVlNnQVAB?ceid=RU:ru&oc=3'),
+	('gb', 'English', 'https://news.google.com/rss/topics/CAAqKggKIiRDQkFTRlFvSUwyMHZNRFZxYUdjU0JXVnVMVWRDR2dKSFFpZ0FQAQ?ceid=GB:en&oc=3'),
+	('tw', 'Chinese', 'https://news.google.com/rss/topics/CAAqKggKIiRDQkFTRlFvSUwyMHZNRFZxYUdjU0JYcG9MVlJYR2dKVVZ5Z0FQAQ?ceid=TW:zh-Hant&oc=3'),
+	('il', 'Hebrew', 'https://news.google.com/rss/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRFZxYUdjU0FtbDNHZ0pKVENnQVAB?ceid=IL:he&oc=3'),
+	('lb', 'Arabic', 'https://news.google.com/rss/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRFZxYUdjU0FtRnlHZ0pNUWlnQVAB?ceid=LB:ar&oc=3')
 ]
 
 async def main(
@@ -59,12 +61,16 @@ async def main(
     db_host = os.getenv("WORLD_HEADLINES_DB_HOST")
     db_port = os.getenv("WORLD_HEADLINES_DB_PORT")
     db_name = os.getenv("WORLD_HEADLINES_DB_NAME")
+    llm_model = os.getenv("WORLD_HEADLINES_LLM_MODEL")
+    gemini_api_key = os.getenv("WORLD_HEADLINES_GEMINI_API_KEY")
 
     assert db_user is not None
     assert db_password is not None
     assert db_host is not None
     assert db_port is not None
     assert db_name is not None
+    assert llm_model is not None
+    assert gemini_api_key is not None
 
     sql_engine = get_async_engine(
         db_user=db_user,
@@ -80,6 +86,15 @@ async def main(
         NewsArticle.get_table_structure(),
         datetime_from.strftime("%Y-%m-%d"),
     )
+
+    litellm_router = get_litellm_router(
+        gemini_api_key=gemini_api_key,
+    )
+
+    llm_client = LLMClient(
+        litellm_router=litellm_router,
+        model_name=llm_model,
+    )
     
     
     logger.info("Infra initialized")
@@ -87,13 +102,14 @@ async def main(
     ## define tasks
 
     async def task1(
-        item: Tuple[str, str],
+        item: Tuple[str, str, str],
         params: Dict
     )-> List[NewsArticle]:
         return await extract_gnews_rss(
             get_session(),
             item[0],
             item[1],
+            item[2],
             params["datetime_from"],
             params["datetime_until"],
             params["max_num"],
@@ -109,6 +125,15 @@ async def main(
         )
 
     async def task3(
+        batch: List[NewsArticle],
+        params: Dict
+    )-> List[NewsArticle]:
+        return await transform_news_translation(
+            batch,
+            params["llm_client"],
+        )
+
+    async def task4(
         item: NewsArticle,
         params: Dict
     ):
@@ -116,7 +141,7 @@ async def main(
             item
         )
 
-    async def task4(
+    async def task5(
         batch: List[NewsArticle],
         params: Dict
     ):
@@ -128,13 +153,16 @@ async def main(
     
     num_step1_workers = 2
     num_step2_workers = 20
-    num_step3_workers = 20
-    num_step4_workers = 1
+    num_step3_workers = 1
+    num_step4_workers = 20
+    num_step5_workers = 1
+
 
     queue0 = asyncio.Queue()
     queue1 = asyncio.Queue()
     queue2 = asyncio.Queue()
     queue3 = asyncio.Queue()
+    queue4 = asyncio.Queue()
     
     steps = [
         worker_supervisor(
@@ -147,7 +175,7 @@ async def main(
             params={
                 "datetime_from": datetime_from,
                 "datetime_until": datetime_until,
-                "max_num":5
+                "max_num":10
             }
         ),
         worker_supervisor(
@@ -158,20 +186,32 @@ async def main(
             output_queue=queue2,
             num_next_workers=num_step3_workers,
         ),
-        worker_supervisor(
-            "transform_article_type",
+        worker_batch_supervisor(
+            "transform_translation",
             task3,
             num_workers=num_step3_workers,
             input_queue=queue2,
+            input_batch_size=10,
             output_queue=queue3,
             num_next_workers=num_step4_workers,
+            params={
+                "llm_client": llm_client,
+            }
         ),
-        worker_batch_supervisor(
-            "load_articles",
+        worker_supervisor(
+            "transform_article_type",
             task4,
             num_workers=num_step4_workers,
             input_queue=queue3,
-            input_batch_size=1,
+            output_queue=queue4,
+            num_next_workers=num_step5_workers,
+        ),
+        worker_batch_supervisor(
+            "load_articles",
+            task5,
+            num_workers=num_step5_workers,
+            input_queue=queue4,
+            input_batch_size=10,
 
             params={
                 "engine":sql_engine,
@@ -191,17 +231,19 @@ async def main(
     await asyncio.gather(*steps, return_exceptions=True)
     
     ## shutdown infra
+    await litellm_router.close()
     await shutdown_sessions()
     await shutdown_browser()
     shutdown_logging()
 
 
 if __name__ == "__main__":
-    time_now = datetime.now(datetime.UTC)
+    time_now = datetime.now(UTC).replace(tzinfo=None)
+    print(time_now)
     asyncio.run(
         main(
-            datetime_from=time_now - timedelta(hours=1),
+            datetime_from=time_now - timedelta(hours=6),
             datetime_until=time_now,
-            dst_table_name="HEADLINE_ARTICLES",
+            dst_table_name="GNEWS_ARTICLES",
         )
     )

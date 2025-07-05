@@ -13,8 +13,8 @@ async def load_news_article_batch(
         await conn.execute(
             text(
                 f"""
-                INSERT INTO {table_name} (country_code, url, title, description, image_url, publish_date, source)
-                VALUES (:country_code, :url, :title, :description, :image_url, :publish_date, :source)
+                INSERT INTO {table_name} (country_code, url, title, description, image_url, publish_date, source, en_title, en_description, en_keywords)
+                VALUES (:country_code, :url, :title, :description, :image_url, :publish_date, :source, :en_title, :en_description, :en_keywords)
                 """
             ),
             article_list,

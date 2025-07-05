@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 
 @dataclass
 class NewsArticle:
@@ -11,10 +11,12 @@ class NewsArticle:
     image_url: str
     publish_date: datetime | str
     source: str
+    language: str
 
     en_title: Optional[str] = None
     en_description: Optional[str] = None
-    
+    en_keywords: Optional[List[str]] = None
+
     @staticmethod
     def get_table_structure():
         return """

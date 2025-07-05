@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 async def extract_gnews_rss(
     session: ClientSession,
     country_code: str,
+    language: str,
     gnews_rss_url: str,
     datetime_from: datetime,
     datetime_until: datetime,
@@ -36,7 +37,7 @@ async def extract_gnews_rss(
         pub_date = datetime.strptime(
             item.find("pubDate").text, "%a, %d %b %Y %H:%M:%S %Z"
         )
-        # pub_date = pub_date.strftime("%Y-%m-%d %H:%M:%S")
+        pub_date = pub_date.replace(tzinfo=None)
 
         if pub_date < datetime_from or pub_date > datetime_until:
             continue
@@ -51,9 +52,10 @@ async def extract_gnews_rss(
             url=item.find("link").text,
             title=item.find("title").text,
             description=item.find("title").text,
-            image_url="",
+            image_url=None,
             publish_date=pub_date,
             source=item.find("source").text,
+            language=language,
         )
         article_list.append(article)
 
