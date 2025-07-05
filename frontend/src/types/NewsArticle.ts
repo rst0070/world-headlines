@@ -10,4 +10,7 @@ export type NewsArticle =  {
     imageUrl:string,
     publishDate:string,
     source:string,
+    enTitle:string,
+    enDescription:string,
+    enKeywords:string[]
 }
