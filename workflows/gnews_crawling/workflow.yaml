@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  name: world-headlines-gnews-crawling
+spec:
+  serviceAccountName: argo-workflow
+  entrypoint: gnews-crawling
+  schedule: "0 0 * * *"
+  templates:
+  - name: gnews-crawling
+    dag:
+      tasks:
+      - name: crawl-gnews
+        template: crawl-gnews
+
+  - name: crawl-gnews
+    container:
+      image: harbor.rst0070.com/world-headlines/gnews-crawling:latest
+      imagePullPolicy: Always
+      command: [poetry, run, python, -m, src.etl]

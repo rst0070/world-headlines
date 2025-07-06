@@ -13,10 +13,10 @@ RUN pip install --no-cache-dir poetry && \
     poetry run playwright install chromium --with-deps --only-shell && \
     rm -rf /var/lib/apt/lists/*
 
-CMD infisical run \
-    --token="${INFISICAL_TOKEN}" \
-    --env="${INFISICAL_ENVIRONMENT}" \
-    --projectId="${INFISICAL_PROJECT_ID}" \
-    --domain="${INFISICAL_HOST}" \
-    -- \
-    poetry run python -m src.etl
+# CMD infisical run \
+#     --token="${INFISICAL_TOKEN}" \
+#     --env="${INFISICAL_ENVIRONMENT}" \
+#     --projectId="${INFISICAL_PROJECT_ID}" \
+#     --domain="${INFISICAL_HOST}" \
+#     -- \
+#     poetry run python -m src.etl
