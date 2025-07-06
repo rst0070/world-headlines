@@ -46,26 +46,20 @@ export async function getNewsArticles(countryCode:string): Promise<NewsArticle[]
 
     let result:NewsArticle[] = []
 
-    await Promise.all(
-        dataList.data.map(
-          (val: NewsArticleResponse , idx: number, arr: NewsArticleResponse[]) => {
-              result.push({
-                  countryCode: val.country_code,
-                  url: val.url,
-                  title: val.title,
-                  description: val.description,
-                  imageUrl: val.image_url,
-                  publishDate: val.publish_date,
-                  source: val.source,
-                  enTitle: val.en_title,
-                  enDescription: val.en_description,
-                  enKeywords: val.en_keywords
-              })
-          }
-        )
-    )
+    dataList.data.forEach(val => {
+        result.push({
+            countryCode: val.country_code,
+            url: val.url,
+            title: val.title,
+            description: val.description,
+            imageUrl: val.image_url,
+            publishDate: val.publish_date,
+            source: val.source,
+            enTitle: val.en_title,
+            enDescription: val.en_description,
+            enKeywords: val.en_keywords
+        })
+    })
 
-    return new Promise((resolve, reject)=>{
-      resolve(result);
-    });
+    return result;
 }

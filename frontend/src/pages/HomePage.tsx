@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import type { NewsArticle } from "../types/NewsArticle";
 import { getWorldSnapshot } from "../services/api.news";
+import { useLanguageContext } from "../context/LanguageContext";
 
 interface HomePageProps {
   countryCodes: string[];
@@ -9,6 +10,13 @@ interface HomePageProps {
 
 const HomePage: React.FC<HomePageProps> = (props: HomePageProps) => {
   const { countryCodes } = props;
+  const languageContext = useLanguageContext();
+
+  if (!languageContext) {
+    throw new Error("LanguageContext not found");
+  }
+
+  const { language } = languageContext;
 
   const [worldSnapshot, setWorldSnapshot] = useState<NewsArticle[]>([]);
 
@@ -31,7 +39,7 @@ const HomePage: React.FC<HomePageProps> = (props: HomePageProps) => {
                   <h2 
                     className="relative text-white bg-black text-xl font-bold px-4 opacity-0 group-hover:opacity-100 hover:bg-opacity-75 transition-opacity duration-200 text-center z-10"
                   >
-                    {article.enTitle}
+                    {language === "original" ? article.title : article.enTitle}
                   </h2>
               </div>
             </a>
