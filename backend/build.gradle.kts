@@ -44,7 +44,9 @@ tasks.named<Jar>("jar") {
 
 
 tasks.named<org.springframework.boot.gradle.tasks.run.BootRun>("bootRun") {
-    environment("JDBC_DB_CONN_STR", "jdbc:postgresql://localhost:5432/world_headlines")
-    environment("JDBC_DB_USERNAME", "wh_updater")
-    environment("JDBC_DB_PASSWORD", "wh_updater")
+    environment("WORLD_HEADLINES_DB_HOST", "database")
+    environment("WORLD_HEADLINES_DB_PORT", "5432")
+	environment("WORLD_HEADLINES_DB_NAME", "world_headlines")
+    environment("WORLD_HEADLINES_DB_USER", "airflow")
+    environment("WORLD_HEADLINES_DB_PASSWORD", "airflow")
 }

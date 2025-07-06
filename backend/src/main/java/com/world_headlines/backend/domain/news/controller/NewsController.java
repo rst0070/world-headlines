@@ -45,15 +45,16 @@ public class NewsController {
 
         List<NewsArticle> newsArticleList = new LinkedList<>();
         for (String countryCode : countryCodeList) {
-            newsArticleList.add(
-                newsService.getNewsArticleList(
+            List<NewsArticle> countryNewsArticleList = newsService.getNewsArticleList(
                     countryCode, 
                     oneDayAgo, 
                     now, 
                     1,
                     true
-                ).get(0)
-            );
+                );  
+            if(!countryNewsArticleList.isEmpty()) {
+                newsArticleList.add(countryNewsArticleList.get(0));
+            }
         }
 
         ResponseDTO<List<NewsArticle>> response = new ResponseDTO<>();
