@@ -14,10 +14,8 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/**").permitAll()
+                .requestMatchers("/**").permitAll()
                 .anyRequest().authenticated()
-            )
-            .requiresChannel(channel -> channel
-                .anyRequest().requiresSecure()  // Requires HTTPS for all requests
             );
         return http.build();
     }

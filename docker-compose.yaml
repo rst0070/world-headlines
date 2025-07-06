@@ -1,0 +1,44 @@
+x-infisical-env: &infisical-env
+  INFISICAL_TOKEN: ${INFISICAL_TOKEN}
+  INFISICAL_ENVIRONMENT: prod
+  INFISICAL_PROJECT_ID: ${INFISICAL_PROJECT_ID}
+  INFISICAL_HOST: ${INFISICAL_HOST}
+
+services:
+
+  database:
+    container_name: wh-postgres
+    image: postgres:13
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    volumes:
+      - ./sql/db_init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "airflow"]
+      interval: 10s
+      retries: 5
+      start_period: 5s
+    restart: always
+
+  backend:
+    container_name: wh-backend
+    build: ./backend
+    depends_on:
+      database:
+        condition: service_healthy
+    environment:
+      <<: *infisical-env
+    ports:
+      - "8080:8080"
+  
+  # frontend needs proxy `/api` requests to backend.
+  # this docker-compose doesn't include that
+  # frontend:
+  #   container_name: wh-frontend
+  #   build: ./frontend
+  #   ports:
+  #     - "80:80"

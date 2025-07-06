@@ -1,0 +1,27 @@
+[project]
+name = "gnews-crawling"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "Wonbin Kim",email = "kwb0711@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "sqlalchemy[asyncio] (>=2.0.41,<3.0.0)",
+    "asyncpg (>=0.30.0,<0.31.0)",
+    "aiohttp (>=3.12.7,<4.0.0)",
+    "pytest-playwright (>=0.7.0,<0.8.0)",
+    "python-dotenv (>=1.1.0,<2.0.0)",
+    "litellm (>=1.74.0,<2.0.0)",
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+packages=[
+    {include = "src"}
+]

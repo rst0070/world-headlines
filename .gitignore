@@ -19,3 +19,5 @@ scripts/dev/logs/**
 .DS_Store
 
 .env
+
+kubernetes/secret.yaml
