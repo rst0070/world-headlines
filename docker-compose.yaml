@@ -1,5 +1,8 @@
-# include:
-#   - compose.airflow.yaml
+x-infisical-env: &infisical-env
+  INFISICAL_TOKEN: ${INFISICAL_TOKEN}
+  INFISICAL_ENVIRONMENT: prod
+  INFISICAL_PROJECT_ID: ${INFISICAL_PROJECT_ID}
+  INFISICAL_HOST: ${INFISICAL_HOST}
 
 services:
 
@@ -11,7 +14,7 @@ services:
       POSTGRES_PASSWORD: airflow
       POSTGRES_DB: airflow
     volumes:
-      - ../../sql/db_init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./sql/db_init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "5432:5432"
     healthcheck:
@@ -23,22 +26,19 @@ services:
 
   backend:
     container_name: wh-backend
-    build: ../../backend
+    build: ./backend
     depends_on:
       database:
         condition: service_healthy
     environment:
-      - JDBC_DB_CONN_STR=jdbc:postgresql://database:5432/world_headlines
-      - JDBC_DB_USERNAME=wh_updater
-      - JDBC_DB_PASSWORD=wh_updater
+      <<: *infisical-env
     ports:
       - "8080:8080"
   
-  frontend:
-    container_name: wh-frontend
-    build: ../../frontend_web
-    ports:
-      - "3000:3000"
-    environment:
-      - BACKEND_API_URL=http://backend:443
-      - SITE_URL_PREFIX=http://frontend:3000
+  # frontend needs proxy `/api` requests to backend.
+  # this docker-compose doesn't include that
+  # frontend:
+  #   container_name: wh-frontend
+  #   build: ./frontend
+  #   ports:
+  #     - "80:80"

@@ -242,7 +242,7 @@ if __name__ == "__main__":
     print(time_now)
     asyncio.run(
         main(
-            datetime_from=time_now - timedelta(hours=6),
+            datetime_from=time_now - timedelta(hours=1),
             datetime_until=time_now,
             dst_table_name="GNEWS_ARTICLES",
         )

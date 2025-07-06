@@ -17,3 +17,6 @@ all: login build push
 run:
 	export ENV=local
 	poetry run python -m src.etl
+
+apply:
+	kubectl apply -f workflow.yaml -n workflows

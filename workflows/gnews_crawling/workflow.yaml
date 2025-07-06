@@ -5,7 +5,7 @@ metadata:
 spec:
   serviceAccountName: argo-workflow
   entrypoint: gnews-crawling
-  schedule: "0 0 * * *"
+  schedule: "0 * * * *"
   templates:
   - name: gnews-crawling
     dag:
@@ -17,4 +17,21 @@ spec:
     container:
       image: harbor.rst0070.com/world-headlines/gnews-crawling:latest
       imagePullPolicy: Always
-      command: [poetry, run, python, -m, src.etl]
+      env:
+        - name: INFISICAL_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: world-headlines-infisical
+              key: INFISICAL_TOKEN
+        - name: INFISICAL_PROJECT_ID
+          valueFrom:
+            secretKeyRef:
+              name: world-headlines-infisical
+              key: INFISICAL_PROJECT_ID
+        - name: INFISICAL_HOST
+          valueFrom:
+            secretKeyRef:
+              name: world-headlines-infisical
+              key: INFISICAL_HOST
+        - name: INFISICAL_ENVIRONMENT
+          value: prod

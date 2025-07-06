@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: world-headlines-backend
+  labels:
+    app: world-headlines-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: world-headlines-backend
+  template:
+    metadata:
+      labels:
+        app: world-headlines-backend
+    spec:
+      containers:
+        - name: world-headlines-backend
+          image: harbor.rst0070.com/world-headlines/backend:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          env:
+            - name: INFISICAL_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: world-headlines-infisical
+                  key: INFISICAL_TOKEN
+            - name: INFISICAL_PROJECT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: world-headlines-infisical
+                  key: INFISICAL_PROJECT_ID
+            - name: INFISICAL_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: world-headlines-infisical
+                  key: INFISICAL_HOST
+            - name: INFISICAL_ENVIRONMENT
+              value: prod
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: world-headlines-backend
+  labels:
+    app: world-headlines-backend
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8080
+      targetPort: 8080
+      protocol: TCP
+  selector:
+    app: world-headlines-backend
