@@ -24,16 +24,16 @@ const NewsCard: React.FC<NewsCardProps> = (props: NewsCardProps) => {
 
     let imageTag = <></>;
     if(newsArticle.imageUrl !== null)
-        imageTag = <img className="w-280px h-168px m-auto" src={newsArticle.imageUrl} alt="" width={280} height={168}/>;
+        imageTag = <img className="w-full md:w-72 h-48 md:h-42 object-cover rounded-md" src={newsArticle.imageUrl} alt="" />;
 
     return (
-        <div className="flex flex-row gap-4 shadow-md">
+        <div className="w-full max-w-4xl flex flex-col md:flex-row gap-4 shadow-md rounded-lg p-4 bg-white">
             {imageTag}
-            <div className="flex flex-col gap-2">
-                <h3 className="text-left text-lg font-bold">
+            <div className="flex flex-col gap-2 flex-1">
+                <h3 className="text-left text-lg md:text-xl font-bold">
                     <a href={newsArticle.url} target="_blank">{title}</a>
                 </h3>
-                <p className="article-publish-date">
+                <p className="article-publish-date text-sm text-gray-600">
                     {
                         new Date(newsArticle.publishDate)
                           .toLocaleDateString(
@@ -48,16 +48,14 @@ const NewsCard: React.FC<NewsCardProps> = (props: NewsCardProps) => {
                           )
                     }
                 </p>
-                <p>{description}</p>
-                <ul className="sources">
-                    <li><a href="#">{newsArticle.source}</a></li>
-                </ul>
-                <ul className="flex flex-row gap-2">
+                <p className="text-sm md:text-base text-gray-700">{description}</p>
+                <p className="text-sm text-gray-500">Source: {newsArticle.source}</p>
+                <div className="flex flex-wrap gap-2">
                     <p className="text-sm text-gray-500">Keywords:</p>
                     {newsArticle.enKeywords.map((keyword) => (
-                        <li key={keyword}>{keyword}</li>
+                        <span key={keyword} className="text-xs bg-gray-100 px-2 py-1 rounded-full">{keyword}</span>
                     ))}
-                </ul>
+                </div>
             </div>
         </div>
     );
