@@ -48,15 +48,22 @@ const HomePage: React.FC<HomePageProps> = (props: HomePageProps) => {
 
       <section id="explore-by-country" className="w-full mt-10 flex flex-col justify-center items-center">
         <h1 className="text-xl md:text-2xl font-bold text-left w-full mb-4">Explore by Country</h1>
-        <ul className="flex flex-wrap gap-2 justify-center md:justify-start">
+        <ul className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4 w-full">
           {countryCodes.map((countryCode: string) => (
-            <li key={countryCode}>
+            <li key={countryCode} className="w-full">
               <Link 
                 to={`/country/${countryCode}`}
-                className="inline-block px-3 py-2 md:px-4 md:py-2 rounded-full text-gray-800 font-medium hover:opacity-80 transition-opacity duration-200 text-sm md:text-base"
-                style={{ backgroundColor: '#F5F5DC' }}
+                className="group relative block w-full px-4 py-4 rounded-2xl text-center font-bold text-slate-600 bg-white border-2 border-slate-200 hover:border-blue-300 hover:text-blue-600 hover:shadow-xl hover:shadow-blue-100/50 hover:-translate-y-1 hover:scale-105 transition-all duration-300 ease-out"
               >
-                {countryCode}
+                <span className="relative z-10 text-sm tracking-wider uppercase">
+                  {countryCode}
+                </span>
+                
+                {/* background pattern */}
+                <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-blue-50/0 to-blue-50/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                
+                {/* effect */}
+                <div className="absolute top-0 left-0 right-0 h-1/2 rounded-t-2xl bg-gradient-to-b from-white/40 to-transparent opacity-60"></div>
               </Link>
             </li>
           ))}
