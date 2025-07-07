@@ -4,8 +4,15 @@ metadata:
   name: world-headlines-ingress
   labels:
     app: world-headlines-ingress
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt
+    cert-manager.io/acme-challenge-type: http01
 spec:
   ingressClassName: nginx
+  tls:
+    - hosts:
+        - world-headlines.rst0070.com
+      secretName: world-headlines-tls-secret
   rules:
     - host: world-headlines.rst0070.com
       http:
@@ -24,4 +31,3 @@ spec:
                 name: world-headlines-frontend
                 port:
                   number: 80
-# TODO: certificate setting
