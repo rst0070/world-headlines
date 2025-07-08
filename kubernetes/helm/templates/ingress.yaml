@@ -1,0 +1,33 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: world-headlines-ingress
+  labels:
+    app: world-headlines-ingress
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt
+    cert-manager.io/acme-challenge-type: http01
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - world-headlines.rst0070.com
+      secretName: world-headlines-tls-secret
+  rules:
+    - host: world-headlines.rst0070.com
+      http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: world-headlines-backend
+                port:
+                  number: 8080
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: world-headlines-frontend
+                port:
+                  number: 80

@@ -12,3 +12,12 @@ git-crypt-key
 .vercel
 
 tmp
+
+# scripts
+scripts/dev/logs/**
+
+.DS_Store
+
+.env
+
+kubernetes/secret.yaml
