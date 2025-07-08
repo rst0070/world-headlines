@@ -22,43 +22,36 @@ const Layout: React.FC<LayoutProps> = (props: LayoutProps) => {
   return (
     <>
       <header 
-        className="fixed top-0 left-0 right-0 opacity-100 z-10 bg-white flex flex-row min-h-12 justify-between items-center border-b border-gray-300 mb-10"
+        className="fixed top-0 left-0 right-0 opacity-100 z-10 bg-white flex flex-row min-h-12 justify-between items-center border-b border-gray-300 mb-10 px-4 md:px-10"
       >
         {/* Home page link */}
-        <p>
-          <a href="/" className="ml-10 flex flex-row items-center">
-            <img src="/favicon.ico" alt="World Headlines" className="w-8 h-8 mr-2 rounded-full" />
-            <p className="text-xl font-bold">World Headlines</p>
+        <div>
+          <a href="/" className="flex flex-row items-center">
+            <img src="/favicon.ico" alt="World Headlines" className="w-6 h-6 md:w-8 md:h-8 mr-2 rounded-full" />
+            <p className="text-lg md:text-xl font-bold">World Headlines</p>
           </a>
-        </p>
-
-        {/* Search bar: TODO */}
-        {/* <div className="flex flex-row items-center">
-          <input type="text" placeholder="Search" className="w-48 h-8 rounded-md border border-gray-300 p-2" />
-        </div> */}
-        <div></div>
-        <div></div>
+        </div>
 
         {/* Switch language button */}
         <div className="flex flex-row items-center text-sm">
           <select 
-            className="w-48 h-10 rounded-md border border-gray-300 p-2"
+            className="w-24 md:w-48 h-8 md:h-10 rounded-md border border-gray-300 p-1 md:p-2 text-xs md:text-sm"
             value={language}
             onChange={handleLanguageChange}
           >
-            <option value="en">English</option>
+            <option value="en">EN</option>
             <option value="original">Original</option>
           </select>
         </div>
 
-        {/* Explore by country link */}
-        <p className="text-sm text-gray-500 mr-10">
+        {/* Explore by country link - hide on small screens, show on larger screens */}
+        <p className="text-sm text-gray-500 hidden md:block">
           <a href="/#explore-by-country">
             Explore by Country
           </a>
         </p>
       </header>
-      <main className="max-w-1000px flex flex-col w-full justify-center items-center mt-12">
+      <main className="max-w-3xl w-full flex flex-col justify-center items-center mt-16 md:mt-12 px-4 ml-auto mr-auto">
         {children}
       </main>
       <footer className="flex flex-col justify-center items-center border-t border-gray-300 mt-10 mb-15">

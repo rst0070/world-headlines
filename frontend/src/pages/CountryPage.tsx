@@ -21,9 +21,9 @@ const CountryPage: React.FC = () => {
     }, [])
 
     return (
-        <section className="max-w-5xl min-w-2xl flex flex-col justify-center items-center">
+        <section className="w-full flex flex-col justify-center items-center">
             <h1 className="text-xl font-bold text-left w-full mb-4">Headlines in {countryInfo?.countryName}</h1>
-            <div className="flex flex-col gap-4 max-w-1xl">
+            <div className="flex flex-col gap-4 w-full justify-center items-center">
                 {newsArticles.map((article) => (
                     <NewsCard key={article.url} newsArticle={article} />
                 ))}
