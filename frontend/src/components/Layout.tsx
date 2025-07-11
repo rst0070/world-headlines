@@ -21,8 +21,6 @@ const Layout: React.FC<LayoutProps> = (props: LayoutProps) => {
 
   return (
     <>
-      <title>World Headlines</title>
-      <meta name="description" content="World Headlines provides various perspectives on the world." />
       <header 
         className="fixed top-0 left-0 right-0 opacity-100 z-10 bg-white flex flex-row min-h-12 justify-between items-center border-b border-gray-300 mb-10 px-4 md:px-10"
       >
