@@ -27,13 +27,13 @@ const NewsCard: React.FC<NewsCardProps> = (props: NewsCardProps) => {
         imageTag = <img className="w-full md:w-72 h-48 md:h-42 object-cover rounded-md" src={newsArticle.imageUrl} alt="" />;
 
     return (
-        <div className="w-full max-w-4xl flex flex-col md:flex-row gap-4 shadow-md rounded-lg p-4 bg-white">
+        <div className="w-full max-w-4xl flex flex-col md:flex-row gap-4 shadow-md rounded-lg p-4 bg-white dark:bg-gray-800">
             {imageTag}
             <div className="flex flex-col gap-2 flex-1">
-                <h3 className="text-left text-lg md:text-xl font-bold">
+                <h3 className="text-left text-lg md:text-xl font-bold dark:text-white">
                     <a href={newsArticle.url} target="_blank">{title}</a>
                 </h3>
-                <p className="article-publish-date text-sm text-gray-600">
+                <p className="article-publish-date text-sm text-gray-600 dark:text-gray-400">
                     {
                         new Date(newsArticle.publishDate)
                           .toLocaleDateString(
@@ -48,12 +48,12 @@ const NewsCard: React.FC<NewsCardProps> = (props: NewsCardProps) => {
                           )
                     }
                 </p>
-                <p className="text-sm md:text-base text-gray-700">{description}</p>
-                <p className="text-sm text-gray-500">Source: {newsArticle.source}</p>
+                <p className="text-sm md:text-base text-gray-700 dark:text-gray-300">{description}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Source: {newsArticle.source}</p>
                 <div className="flex flex-wrap gap-2">
-                    <p className="text-sm text-gray-500">Keywords:</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Keywords:</p>
                     {newsArticle.enKeywords.map((keyword) => (
-                        <span key={keyword} className="text-xs bg-gray-100 px-2 py-1 rounded-full">{keyword}</span>
+                        <span key={keyword} className="text-xs bg-gray-100 px-2 py-1 rounded-full dark:bg-gray-700 dark:text-gray-300">{keyword}</span>
                     ))}
                 </div>
             </div>
