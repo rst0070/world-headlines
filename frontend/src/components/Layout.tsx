@@ -22,13 +22,13 @@ const Layout: React.FC<LayoutProps> = (props: LayoutProps) => {
   return (
     <>
       <header 
-        className="fixed top-0 left-0 right-0 opacity-100 z-10 bg-white flex flex-row min-h-12 justify-between items-center border-b border-gray-300 mb-10 px-4 md:px-10"
+        className="fixed top-0 left-0 right-0 opacity-100 z-10 bg-white dark:bg-gray-900 flex flex-row min-h-12 justify-between items-center border-b border-gray-300 dark:border-gray-700 mb-10 px-4 md:px-10"
       >
         {/* Home page link */}
         <div>
           <a href="/" className="flex flex-row items-center">
             <img src="/favicon.ico" alt="World Headlines" className="w-6 h-6 md:w-8 md:h-8 mr-2 rounded-full" />
-            <p className="text-lg md:text-xl font-bold">World Headlines</p>
+            <p className="text-lg md:text-xl font-bold dark:text-white">World Headlines</p>
           </a>
         </div>
 
