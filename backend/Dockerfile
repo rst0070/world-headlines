@@ -5,7 +5,7 @@ WORKDIR /app
 # Copy the Gradle project files
 COPY . .
 # Build the Spring Boot app
-RUN gradle clean build
+RUN gradle clean build -x test --no-daemon
 
 # Use a lightweight JRE for running the app
 FROM openjdk:25-ea-21-jdk-slim-bookworm
