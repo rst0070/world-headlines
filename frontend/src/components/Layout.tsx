@@ -44,6 +44,12 @@ const Layout: React.FC<LayoutProps> = (props: LayoutProps) => {
           </select>
         </div>
 
+        {/* Sign in/up link */}
+        <div className="flex flex-row items-center text-sm">
+          <a href="/signin">Sign in/up</a>
+        </div>
+
+
         {/* Explore by country link - hide on small screens, show on larger screens */}
         <p className="text-sm text-gray-500 hidden md:block">
           <a href="/#explore-by-country">
