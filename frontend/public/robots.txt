@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://world-headlines.rst0070.com/sitemap.xml

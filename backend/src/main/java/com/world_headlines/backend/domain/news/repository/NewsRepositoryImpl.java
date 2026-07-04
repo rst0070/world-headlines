@@ -65,8 +65,8 @@ public class NewsRepositoryImpl implements NewsRepository {
         String query =
             """
             SELECT
-                country_code,
                 url,
+                country_code,
                 title,
                 description,
                 image_url,
@@ -77,13 +77,28 @@ public class NewsRepositoryImpl implements NewsRepository {
                 en_topics,
                 en_keywords
             FROM
-                GNEWS_ARTICLES
-            WHERE
-                country_code = :country_code
-                AND publish_date >= CAST(:from_date AS TIMESTAMP) AND publish_date <= CAST(:to_date AS TIMESTAMP)
-            """ 
-            + (shouldHaveImage ? "AND image_url IS NOT NULL \n" : "\n") 
-            + """
+                (
+                    SELECT
+                        url,
+                        country_code,
+                        title,
+                        description,
+                        image_url,
+                        publish_date,
+                        source,
+                        en_title,
+                        en_description,
+                        en_topics,
+                        en_keywords,
+                        ROW_NUMBER() OVER (PARTITION BY url ORDER BY publish_date DESC) AS rn
+                    FROM GNEWS_ARTICLES
+                    WHERE
+                        country_code = :country_code
+                        AND publish_date >= CAST(:from_date AS TIMESTAMP) 
+                        AND publish_date <= CAST(:to_date AS TIMESTAMP)
+                        """ + (shouldHaveImage ? "AND image_url IS NOT NULL \n" : "\n") + """
+                ) ranked
+            WHERE ranked.rn = 1
             ORDER BY publish_date DESC
             LIMIT :size
             """;

@@ -1,37 +1,37 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: world-headlines-frontend
+  name: {{ .Values.name }}-frontend
   labels:
-    app: world-headlines-frontend
+    app: {{ .Values.name }}-frontend
 spec:
-  replicas: 1
+  replicas: {{ .Values.frontend.replicas }}
   selector:
     matchLabels:
-      app: world-headlines-frontend
+      app: {{ .Values.name }}-frontend
   template:
     metadata:
       labels:
-        app: world-headlines-frontend
+        app: {{ .Values.name }}-frontend
     spec:
       containers:
-        - name: world-headlines-frontend
-          image: harbor.rst0070.com/world-headlines/frontend:latest
-          imagePullPolicy: Always
+        - name: {{ .Values.name }}-frontend
+          image: "{{ .Values.frontend.image.repository }}:{{ .Values.frontend.image.tag }}"
+          imagePullPolicy: {{ .Values.frontend.image.pullPolicy }}
           ports:
-            - containerPort: 80
+            - containerPort: {{ .Values.frontend.port }}
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: world-headlines-frontend
+  name: {{ .Values.name }}-frontend
   labels:
-    app: world-headlines-frontend
+    app: {{ .Values.name }}-frontend
 spec:
   type: ClusterIP
   ports:
-    - port: 80
-      targetPort: 80
+    - port: {{ .Values.frontend.port }}
+      targetPort: {{ .Values.frontend.port }}
       protocol: TCP
   selector:
-    app: world-headlines-frontend
+    app: {{ .Values.name }}-frontend

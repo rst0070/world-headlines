@@ -16,27 +16,18 @@ def _get_model_list(
         model_list.extend(
             [
                 {
-                    "model_name": "gemini-2.0-flash-lite",
-                    "litellm_params": {
-                        "model": "gemini/gemini-2.0-flash-lite-preview-02-05",
-                        "api_key": gemini_api_key,
-                        "timeout": 300,
-                        "extra_headers": extra_headers,
-                    },
-                },
-                {
-                    "model_name": "gemini-2.0-flash",
-                    "litellm_params": {
-                        "model": "gemini/gemini-2.0-flash",
-                        "api_key": gemini_api_key,
-                        "timeout": 300,
-                        "extra_headers": extra_headers,
-                    },
-                },
-                {
                     "model_name": "gemini-2.5-flash",
                     "litellm_params": {
                         "model": "gemini/gemini-2.5-flash-preview-04-17",
+                        "api_key": gemini_api_key,
+                        "timeout": 300,
+                        "extra_headers": extra_headers,
+                    },
+                },
+                {
+                    "model_name": "gemini-2.5-flash-lite",
+                    "litellm_params": {
+                        "model": "gemini/gemini-2.5-flash-lite",
                         "api_key": gemini_api_key,
                         "timeout": 300,
                         "extra_headers": extra_headers,

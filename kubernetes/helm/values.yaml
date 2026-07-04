@@ -1,0 +1,39 @@
+# Default values for the world-headlines chart.
+# Identifying values (public host, secret names, ingress annotations) are
+# intentionally left blank here so they are NOT baked into the published chart.
+# They must be supplied at deploy time by CD, e.g.
+#   --set ingress.host=... --set backend.infisical.secretName=...
+
+# Common name prefix for all resources (e.g. <name>-backend).
+name: world-headlines
+
+backend:
+  replicas: 1
+  image:
+    repository: ghcr.io/rst0070/world-headlines/backend
+    tag: latest
+    pullPolicy: Always
+  port: 8080
+  infisical:
+    # Name of the pre-existing Kubernetes Secret holding Infisical credentials.
+    # Defaults to "<name>-infisical" when left blank.
+    secretName: ""
+    environment: prod
+
+frontend:
+  replicas: 1
+  image:
+    repository: ghcr.io/rst0070/world-headlines/frontend
+    tag: latest
+    pullPolicy: Always
+  port: 80
+
+ingress:
+  enabled: true
+  className: nginx
+  # Required. Public hostname, injected by CD.
+  host: ""
+  # TLS secret name. Defaults to "<name>-tls" when left blank.
+  tlsSecretName: ""
+  # Ingress annotations, injected by CD (e.g. cert-manager cluster-issuer).
+  annotations: {}

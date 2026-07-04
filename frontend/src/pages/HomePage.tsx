@@ -53,14 +53,14 @@ const HomePage: React.FC<HomePageProps> = (props: HomePageProps) => {
             <li key={countryCode} className="w-full">
               <Link 
                 to={`/country/${countryCode}`}
-                className="group relative block w-full px-4 py-4 rounded-2xl text-center font-bold text-slate-600 bg-white border-2 border-slate-200 hover:border-blue-300 hover:text-blue-600 hover:shadow-xl hover:shadow-blue-100/50 hover:-translate-y-1 hover:scale-105 transition-all duration-300 ease-out"
+                className="group relative block w-full px-4 py-4 rounded-2xl text-center font-bold text-slate-600 bg-white border-2 border-slate-200 hover:border-blue-300 hover:text-blue-600 hover:shadow-xl hover:shadow-blue-100/50 hover:-translate-y-1 hover:scale-105 transition-all duration-300 ease-out dark:bg-gray-800 dark:border-gray-700 dark:hover:border-blue-300 dark:hover:text-blue-600 dark:hover:shadow-xl dark:hover:shadow-blue-100/50"
               >
-                <span className="relative z-10 text-sm tracking-wider uppercase">
+                <span className="relative z-10 text-sm tracking-wider uppercase dark:text-white">
                   {countryCode}
                 </span>
                 
                 {/* background pattern */}
-                <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-blue-50/0 to-blue-50/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-blue-50/0 to-blue-50/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 dark:from-blue-900/0 dark:to-blue-900/50"></div>
                 
                 {/* effect */}
                 <div className="absolute top-0 left-0 right-0 h-1/2 rounded-t-2xl bg-gradient-to-b from-white/40 to-transparent opacity-60"></div>
