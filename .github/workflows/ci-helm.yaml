@@ -1,0 +1,66 @@
+name: "CI - Helm Chart"
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "kubernetes/helm/**"
+      - ".github/workflows/ci-helm.yaml"
+  pull_request:
+    paths:
+      - "kubernetes/helm/**"
+      - ".github/workflows/ci-helm.yaml"
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  CHART_DIR: kubernetes/helm
+  # Charts are pushed under oci://ghcr.io/<owner>/charts
+  CHART_REPO: ${{ github.repository_owner }}/charts
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+
+      - name: Lint chart
+        run: helm lint ${{ env.CHART_DIR }}
+
+      - name: Template chart
+        run: helm template world-headlines ${{ env.CHART_DIR }}
+
+  publish:
+    needs: lint
+    # Only publish from main (and manual runs), never from pull requests.
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+
+      - name: Log in to GitHub Container Registry
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | \
+            helm registry login ${{ env.REGISTRY }} \
+              --username ${{ github.actor }} \
+              --password-stdin
+
+      - name: Package chart
+        run: helm package ${{ env.CHART_DIR }} --destination ./dist
+
+      - name: Push chart to GHCR
+        run: |
+          helm push ./dist/*.tgz oci://${{ env.REGISTRY }}/${{ env.CHART_REPO }}
