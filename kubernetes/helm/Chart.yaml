@@ -1,5 +1,5 @@
 apiVersion: v2
-name: world-healines
+name: world-headlines
 description: A Helm chart for World Headlines
 
 # A chart can be either an 'application' or a 'library' chart.
